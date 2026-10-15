@@ -1,11 +1,15 @@
 {
   "name": "all-events",
+  "account_id": "58feb39648ec3dc6339ebad19ede626a",
+  "main": "vinext/server/fetch-handler",
   "compatibility_date": "2026-09-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "site-creator-d1",
-      "database_id": "00000000-0000-4000-8000-000000000000",
+      "database_name": "event-market-db",
+      "database_id": "17fd6f4f-e38a-4f9a-a2bb-ca2030a0d8d7",
       "migrations_dir": "drizzle"
     }
   ]
