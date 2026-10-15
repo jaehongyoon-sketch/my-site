@@ -1,0 +1,2583 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "eb824f79-4a8f-44e1-9c58-08dedf13accb",
+  "prevId": "d7fa6898-dc87-495e-85ca-fd14b4fe8d39",
+  "tables": {
+    "linked_accounts": {
+      "name": "linked_accounts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_account_id": {
+          "name": "external_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unlinked'"
+        },
+        "verification": {
+          "name": "verification",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'not_started'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_account_scope": {
+          "name": "uq_account_scope",
+          "columns": [
+            "id",
+            "connection_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "uq_external_account": {
+          "name": "uq_external_account",
+          "columns": [
+            "connection_id",
+            "external_account_id"
+          ],
+          "isUnique": true
+        },
+        "idx_accounts_user": {
+          "name": "idx_accounts_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "linked_accounts_user_id_app_users_id_fk": {
+          "name": "linked_accounts_user_id_app_users_id_fk",
+          "tableFrom": "linked_accounts",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "linked_accounts_connection_id_provider_connections_id_fk": {
+          "name": "linked_accounts_connection_id_provider_connections_id_fk",
+          "tableFrom": "linked_accounts",
+          "tableTo": "provider_connections",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "account_status": {
+          "name": "account_status",
+          "value": "\"linked_accounts\".\"status\" IN ('unlinked','pending','active','restricted','closed')"
+        },
+        "verification_status": {
+          "name": "verification_status",
+          "value": "\"linked_accounts\".\"verification\" IN ('not_started','pending','verified','rejected')"
+        }
+      }
+    },
+    "audit_entries": {
+      "name": "audit_entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "correlation_id": {
+          "name": "correlation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_audit_entity": {
+          "name": "idx_audit_entity",
+          "columns": [
+            "entity_type",
+            "entity_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "audit_entries_actor_user_id_app_users_id_fk": {
+          "name": "audit_entries_actor_user_id_app_users_id_fk",
+          "tableFrom": "audit_entries",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "actor_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "balance_snapshots": {
+      "name": "balance_snapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'USD'"
+        },
+        "cash_cents": {
+          "name": "cash_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "buying_power_cents": {
+          "name": "buying_power_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "withdrawable_cents": {
+          "name": "withdrawable_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_cents": {
+          "name": "reserved_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_revision": {
+          "name": "provider_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_balance_revision": {
+          "name": "uq_balance_revision",
+          "columns": [
+            "account_id",
+            "provider_revision"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "balance_snapshots_account_id_linked_accounts_id_fk": {
+          "name": "balance_snapshots_account_id_linked_accounts_id_fk",
+          "tableFrom": "balance_snapshots",
+          "tableTo": "linked_accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "balance_currency": {
+          "name": "balance_currency",
+          "value": "\"balance_snapshots\".\"currency\" = 'USD'"
+        },
+        "balance_cash": {
+          "name": "balance_cash",
+          "value": "typeof(\"balance_snapshots\".\"cash_cents\") = 'integer' AND \"balance_snapshots\".\"cash_cents\" BETWEEN -9007199254740991 AND 9007199254740991"
+        },
+        "balance_buying_power": {
+          "name": "balance_buying_power",
+          "value": "typeof(\"balance_snapshots\".\"buying_power_cents\") = 'integer' AND \"balance_snapshots\".\"buying_power_cents\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"balance_snapshots\".\"buying_power_cents\" >= 0"
+        },
+        "balance_withdrawable": {
+          "name": "balance_withdrawable",
+          "value": "typeof(\"balance_snapshots\".\"withdrawable_cents\") = 'integer' AND \"balance_snapshots\".\"withdrawable_cents\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"balance_snapshots\".\"withdrawable_cents\" >= 0"
+        },
+        "balance_reserved": {
+          "name": "balance_reserved",
+          "value": "typeof(\"balance_snapshots\".\"reserved_cents\") = 'integer' AND \"balance_snapshots\".\"reserved_cents\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"balance_snapshots\".\"reserved_cents\" >= 0"
+        },
+        "balance_revision": {
+          "name": "balance_revision",
+          "value": "typeof(\"balance_snapshots\".\"provider_revision\") = 'integer' AND \"balance_snapshots\".\"provider_revision\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"balance_snapshots\".\"provider_revision\" > 0"
+        }
+      }
+    },
+    "provider_connections": {
+      "name": "provider_connections",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "environment": {
+          "name": "environment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "approval": {
+          "name": "approval",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'unapproved'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_provider_environment": {
+          "name": "uq_provider_environment",
+          "columns": [
+            "provider_id",
+            "environment"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "connection_environment": {
+          "name": "connection_environment",
+          "value": "\"provider_connections\".\"environment\" IN ('development','sandbox','live')"
+        },
+        "connection_approval": {
+          "name": "connection_approval",
+          "value": "\"provider_connections\".\"approval\" IN ('unapproved','testing','approved','suspended')"
+        }
+      }
+    },
+    "fills": {
+      "name": "fills",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_fill_id": {
+          "name": "external_fill_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "price_cents": {
+          "name": "price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fee_cents": {
+          "name": "fee_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "executed_at": {
+          "name": "executed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_fill_external": {
+          "name": "uq_fill_external",
+          "columns": [
+            "connection_id",
+            "account_id",
+            "external_fill_id"
+          ],
+          "isUnique": true
+        },
+        "idx_fills_order": {
+          "name": "idx_fills_order",
+          "columns": [
+            "order_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "fills_order_id_account_id_connection_id_orders_id_account_id_connection_id_fk": {
+          "name": "fills_order_id_account_id_connection_id_orders_id_account_id_connection_id_fk",
+          "tableFrom": "fills",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id",
+            "account_id",
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id",
+            "account_id",
+            "connection_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "fill_quantity": {
+          "name": "fill_quantity",
+          "value": "typeof(\"fills\".\"quantity\") = 'integer' AND \"fills\".\"quantity\" BETWEEN 1 AND 10000"
+        },
+        "fill_price": {
+          "name": "fill_price",
+          "value": "typeof(\"fills\".\"price_cents\") = 'integer' AND \"fills\".\"price_cents\" BETWEEN 1 AND 99"
+        },
+        "fill_fee": {
+          "name": "fill_fee",
+          "value": "typeof(\"fills\".\"fee_cents\") = 'integer' AND \"fills\".\"fee_cents\" BETWEEN -9007199254740991 AND 9007199254740991"
+        }
+      }
+    },
+    "google_auth_flows": {
+      "name": "google_auth_flows",
+      "columns": {
+        "state_hash": {
+          "name": "state_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "browser_hash": {
+          "name": "browser_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "verifier": {
+          "name": "verifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nonce": {
+          "name": "nonce",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_google_flows_expiry": {
+          "name": "idx_google_flows_expiry",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "google_sessions": {
+      "name": "google_sessions",
+      "columns": {
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "google_subject": {
+          "name": "google_subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_google_sessions_expiry": {
+          "name": "idx_google_sessions_expiry",
+          "columns": [
+            "expires_at"
+          ],
+          "isUnique": false
+        },
+        "idx_google_sessions_subject": {
+          "name": "idx_google_sessions_subject",
+          "columns": [
+            "google_subject"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "instruments": {
+      "name": "instruments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_market_id": {
+          "name": "external_market_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rules_version": {
+          "name": "rules_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_instrument_external": {
+          "name": "uq_instrument_external",
+          "columns": [
+            "connection_id",
+            "external_market_id"
+          ],
+          "isUnique": true
+        },
+        "uq_instrument_scope": {
+          "name": "uq_instrument_scope",
+          "columns": [
+            "id",
+            "connection_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "instruments_connection_id_provider_connections_id_fk": {
+          "name": "instruments_connection_id_provider_connections_id_fk",
+          "tableFrom": "instruments",
+          "tableTo": "provider_connections",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "instrument_status": {
+          "name": "instrument_status",
+          "value": "\"instruments\".\"status\" IN ('open','halted','closed','resolved')"
+        }
+      }
+    },
+    "name_change_limits": {
+      "name": "name_change_limits",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name_hash": {
+          "name": "name_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "changed_at": {
+          "name": "changed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "operation_id": {
+          "name": "operation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "name_change_limits_user_id_app_users_id_fk": {
+          "name": "name_change_limits_user_id_app_users_id_fk",
+          "tableFrom": "name_change_limits",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "orders": {
+      "name": "orders",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "market_id": {
+          "name": "market_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_order_id": {
+          "name": "external_order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "client_order_id": {
+          "name": "client_order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "side": {
+          "name": "side",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "limit_price_cents": {
+          "name": "limit_price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "filled_quantity": {
+          "name": "filled_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'submitting'"
+        },
+        "cancel_requested": {
+          "name": "cancel_requested",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "provider_revision": {
+          "name": "provider_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_order_scope": {
+          "name": "uq_order_scope",
+          "columns": [
+            "id",
+            "account_id",
+            "connection_id"
+          ],
+          "isUnique": true
+        },
+        "uq_order_request": {
+          "name": "uq_order_request",
+          "columns": [
+            "account_id",
+            "client_order_id"
+          ],
+          "isUnique": true
+        },
+        "uq_order_external": {
+          "name": "uq_order_external",
+          "columns": [
+            "connection_id",
+            "account_id",
+            "external_order_id"
+          ],
+          "isUnique": true
+        },
+        "idx_orders_user_created": {
+          "name": "idx_orders_user_created",
+          "columns": [
+            "user_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "orders_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk": {
+          "name": "orders_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk",
+          "tableFrom": "orders",
+          "tableTo": "linked_accounts",
+          "columnsFrom": [
+            "account_id",
+            "connection_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "id",
+            "connection_id",
+            "user_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "orders_market_id_connection_id_instruments_id_connection_id_fk": {
+          "name": "orders_market_id_connection_id_instruments_id_connection_id_fk",
+          "tableFrom": "orders",
+          "tableTo": "instruments",
+          "columnsFrom": [
+            "market_id",
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id",
+            "connection_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "order_side": {
+          "name": "order_side",
+          "value": "\"orders\".\"side\" IN ('buy','sell')"
+        },
+        "order_outcome": {
+          "name": "order_outcome",
+          "value": "\"orders\".\"outcome\" IN ('yes','no')"
+        },
+        "order_quantity": {
+          "name": "order_quantity",
+          "value": "typeof(\"orders\".\"quantity\") = 'integer' AND \"orders\".\"quantity\" BETWEEN 1 AND 10000"
+        },
+        "order_price": {
+          "name": "order_price",
+          "value": "typeof(\"orders\".\"limit_price_cents\") = 'integer' AND \"orders\".\"limit_price_cents\" BETWEEN 1 AND 99"
+        },
+        "order_filled_quantity": {
+          "name": "order_filled_quantity",
+          "value": "typeof(\"orders\".\"filled_quantity\") = 'integer' AND \"orders\".\"filled_quantity\" BETWEEN 0 AND \"orders\".\"quantity\""
+        },
+        "order_status": {
+          "name": "order_status",
+          "value": "\"orders\".\"status\" IN ('submitting','unknown','accepted','partially_filled','filled','canceled','rejected','expired')"
+        },
+        "order_cancel_boolean": {
+          "name": "order_cancel_boolean",
+          "value": "\"orders\".\"cancel_requested\" IN (0,1)"
+        },
+        "order_revision": {
+          "name": "order_revision",
+          "value": "\"orders\".\"provider_revision\" IS NULL OR (typeof(\"orders\".\"provider_revision\") = 'integer' AND \"orders\".\"provider_revision\" BETWEEN 1 AND 9007199254740991)"
+        },
+        "order_status_quantity": {
+          "name": "order_status_quantity",
+          "value": "(\"orders\".\"status\" IN ('submitting','unknown','accepted','rejected') AND \"orders\".\"filled_quantity\" = 0) OR (\"orders\".\"status\" = 'partially_filled' AND \"orders\".\"filled_quantity\" > 0 AND \"orders\".\"filled_quantity\" < \"orders\".\"quantity\") OR (\"orders\".\"status\" = 'filled' AND \"orders\".\"filled_quantity\" = \"orders\".\"quantity\") OR (\"orders\".\"status\" IN ('canceled','expired') AND \"orders\".\"filled_quantity\" < \"orders\".\"quantity\")"
+        },
+        "order_terminal_cancel": {
+          "name": "order_terminal_cancel",
+          "value": "\"orders\".\"status\" NOT IN ('filled','canceled','rejected','expired') OR \"orders\".\"cancel_requested\" = 0"
+        }
+      }
+    },
+    "own_events": {
+      "name": "own_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rules": {
+          "name": "rules",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "closes_at": {
+          "name": "closes_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'draft'"
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_own_events_status_close": {
+          "name": "idx_own_events_status_close",
+          "columns": [
+            "status",
+            "closes_at",
+            "id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "own_events_updated_by_app_users_id_fk": {
+          "name": "own_events_updated_by_app_users_id_fk",
+          "tableFrom": "own_events",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "own_event_status": {
+          "name": "own_event_status",
+          "value": "\"own_events\".\"status\" IN ('draft','published','archived')"
+        },
+        "own_event_revision": {
+          "name": "own_event_revision",
+          "value": "\"own_events\".\"revision\" > 0"
+        }
+      }
+    },
+    "position_snapshots": {
+      "name": "position_snapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "market_id": {
+          "name": "market_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_quantity": {
+          "name": "reserved_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider_revision": {
+          "name": "provider_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "observed_at": {
+          "name": "observed_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_position_revision": {
+          "name": "uq_position_revision",
+          "columns": [
+            "account_id",
+            "market_id",
+            "outcome",
+            "provider_revision"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "position_snapshots_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk": {
+          "name": "position_snapshots_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk",
+          "tableFrom": "position_snapshots",
+          "tableTo": "linked_accounts",
+          "columnsFrom": [
+            "account_id",
+            "connection_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "id",
+            "connection_id",
+            "user_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "position_snapshots_market_id_connection_id_instruments_id_connection_id_fk": {
+          "name": "position_snapshots_market_id_connection_id_instruments_id_connection_id_fk",
+          "tableFrom": "position_snapshots",
+          "tableTo": "instruments",
+          "columnsFrom": [
+            "market_id",
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id",
+            "connection_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "position_outcome": {
+          "name": "position_outcome",
+          "value": "\"position_snapshots\".\"outcome\" IN ('yes','no')"
+        },
+        "position_quantity": {
+          "name": "position_quantity",
+          "value": "typeof(\"position_snapshots\".\"quantity\") = 'integer' AND \"position_snapshots\".\"quantity\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"position_snapshots\".\"quantity\" >= 0"
+        },
+        "position_reserved": {
+          "name": "position_reserved",
+          "value": "typeof(\"position_snapshots\".\"reserved_quantity\") = 'integer' AND \"position_snapshots\".\"reserved_quantity\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"position_snapshots\".\"reserved_quantity\" BETWEEN 0 AND \"position_snapshots\".\"quantity\""
+        },
+        "position_revision": {
+          "name": "position_revision",
+          "value": "typeof(\"position_snapshots\".\"provider_revision\") = 'integer' AND \"position_snapshots\".\"provider_revision\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"position_snapshots\".\"provider_revision\" > 0"
+        }
+      }
+    },
+    "practice_cash": {
+      "name": "practice_cash",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "available_units": {
+          "name": "available_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_units": {
+          "name": "reserved_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "spent_units": {
+          "name": "spent_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "practice_cash_user_id_practice_wallets_user_id_fk": {
+          "name": "practice_cash_user_id_practice_wallets_user_id_fk",
+          "tableFrom": "practice_cash",
+          "tableTo": "practice_wallets",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_cash_conserved": {
+          "name": "practice_cash_conserved",
+          "value": "typeof(\"practice_cash\".\"available_units\")='integer' AND typeof(\"practice_cash\".\"reserved_units\")='integer' AND typeof(\"practice_cash\".\"spent_units\")='integer' AND \"practice_cash\".\"available_units\">=0 AND \"practice_cash\".\"reserved_units\">=0 AND \"practice_cash\".\"spent_units\">=0 AND \"practice_cash\".\"available_units\"+\"practice_cash\".\"reserved_units\"+\"practice_cash\".\"spent_units\"=40000000"
+        }
+      }
+    },
+    "practice_cash_entries": {
+      "name": "practice_cash_entries",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "available_delta_units": {
+          "name": "available_delta_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_delta_units": {
+          "name": "reserved_delta_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "practice_cash_entry_order_kind": {
+          "name": "practice_cash_entry_order_kind",
+          "columns": [
+            "order_id",
+            "kind"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "practice_cash_entries_user_id_practice_cash_user_id_fk": {
+          "name": "practice_cash_entries_user_id_practice_cash_user_id_fk",
+          "tableFrom": "practice_cash_entries",
+          "tableTo": "practice_cash",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_cash_entries_order_id_practice_orders_id_fk": {
+          "name": "practice_cash_entries_order_id_practice_orders_id_fk",
+          "tableFrom": "practice_cash_entries",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_cash_entry_kind": {
+          "name": "practice_cash_entry_kind",
+          "value": "\"practice_cash_entries\".\"kind\" IN ('grant','reserve','release')"
+        }
+      }
+    },
+    "practice_ledger": {
+      "name": "practice_ledger",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "available_delta": {
+          "name": "available_delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_delta": {
+          "name": "reserved_delta",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "practice_ledger_order_kind": {
+          "name": "practice_ledger_order_kind",
+          "columns": [
+            "order_id",
+            "kind"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "practice_ledger_user_id_practice_wallets_user_id_fk": {
+          "name": "practice_ledger_user_id_practice_wallets_user_id_fk",
+          "tableFrom": "practice_ledger",
+          "tableTo": "practice_wallets",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_ledger_order_id_practice_orders_id_fk": {
+          "name": "practice_ledger_order_id_practice_orders_id_fk",
+          "tableFrom": "practice_ledger",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_ledger_kind": {
+          "name": "practice_ledger_kind",
+          "value": "\"practice_ledger\".\"kind\" IN ('grant','reserve','release')"
+        }
+      }
+    },
+    "practice_match_entries": {
+      "name": "practice_match_entries",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "principal_units": {
+          "name": "principal_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fee_units": {
+          "name": "fee_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "released_units": {
+          "name": "released_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_debit_units": {
+          "name": "reserved_debit_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "practice_entry_match_order": {
+          "name": "practice_entry_match_order",
+          "columns": [
+            "match_id",
+            "order_id"
+          ],
+          "isUnique": true
+        },
+        "practice_entry_user": {
+          "name": "practice_entry_user",
+          "columns": [
+            "user_id",
+            "match_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "practice_match_entries_match_id_practice_matches_id_fk": {
+          "name": "practice_match_entries_match_id_practice_matches_id_fk",
+          "tableFrom": "practice_match_entries",
+          "tableTo": "practice_matches",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_match_entries_order_id_practice_orders_id_fk": {
+          "name": "practice_match_entries_order_id_practice_orders_id_fk",
+          "tableFrom": "practice_match_entries",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_match_entries_user_id_practice_cash_user_id_fk": {
+          "name": "practice_match_entries_user_id_practice_cash_user_id_fk",
+          "tableFrom": "practice_match_entries",
+          "tableTo": "practice_cash",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_entry_conservation": {
+          "name": "practice_entry_conservation",
+          "value": "\"practice_match_entries\".\"principal_units\">0 AND \"practice_match_entries\".\"fee_units\">=0 AND \"practice_match_entries\".\"released_units\">=0 AND \"practice_match_entries\".\"reserved_debit_units\"=\"practice_match_entries\".\"principal_units\"+\"practice_match_entries\".\"fee_units\"+\"practice_match_entries\".\"released_units\""
+        }
+      }
+    },
+    "practice_matches": {
+      "name": "practice_matches",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "maker_id": {
+          "name": "maker_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "taker_id": {
+          "name": "taker_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "maker_price": {
+          "name": "maker_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "practice_match_event": {
+          "name": "practice_match_event",
+          "columns": [
+            "event_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "practice_matches_event_id_own_events_id_fk": {
+          "name": "practice_matches_event_id_own_events_id_fk",
+          "tableFrom": "practice_matches",
+          "tableTo": "own_events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_matches_maker_id_practice_orders_id_fk": {
+          "name": "practice_matches_maker_id_practice_orders_id_fk",
+          "tableFrom": "practice_matches",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "maker_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_matches_taker_id_practice_orders_id_fk": {
+          "name": "practice_matches_taker_id_practice_orders_id_fk",
+          "tableFrom": "practice_matches",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "taker_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_match_terms": {
+          "name": "practice_match_terms",
+          "value": "\"practice_matches\".\"quantity\">0 AND \"practice_matches\".\"maker_price\" BETWEEN 1 AND 99 AND \"practice_matches\".\"maker_id\"<>\"practice_matches\".\"taker_id\""
+        }
+      }
+    },
+    "practice_orders": {
+      "name": "practice_orders",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "intent_json": {
+          "name": "intent_json",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_revision": {
+          "name": "event_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_title": {
+          "name": "event_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "outcome": {
+          "name": "outcome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "price_cents": {
+          "name": "price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "principal_cents": {
+          "name": "principal_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fee_cents": {
+          "name": "fee_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_cents": {
+          "name": "total_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "release_id": {
+          "name": "release_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "practice_order_idempotency": {
+          "name": "practice_order_idempotency",
+          "columns": [
+            "user_id",
+            "client_id"
+          ],
+          "isUnique": true
+        },
+        "practice_order_book": {
+          "name": "practice_order_book",
+          "columns": [
+            "event_id",
+            "status",
+            "outcome",
+            "price_cents"
+          ],
+          "isUnique": false
+        },
+        "practice_order_history": {
+          "name": "practice_order_history",
+          "columns": [
+            "user_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "practice_orders_user_id_practice_wallets_user_id_fk": {
+          "name": "practice_orders_user_id_practice_wallets_user_id_fk",
+          "tableFrom": "practice_orders",
+          "tableTo": "practice_wallets",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "practice_orders_event_id_own_events_id_fk": {
+          "name": "practice_orders_event_id_own_events_id_fk",
+          "tableFrom": "practice_orders",
+          "tableTo": "own_events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_order_terms": {
+          "name": "practice_order_terms",
+          "value": "\"practice_orders\".\"outcome\" IN ('yes','no') AND \"practice_orders\".\"status\" IN ('open','expired','voided') AND \"practice_orders\".\"price_cents\" BETWEEN 1 AND 99 AND \"practice_orders\".\"quantity\" BETWEEN 1 AND 10000 AND \"practice_orders\".\"principal_cents\"=\"practice_orders\".\"price_cents\"*\"practice_orders\".\"quantity\" AND \"practice_orders\".\"fee_cents\"=CAST((\"practice_orders\".\"principal_cents\"+200)/400 AS INTEGER) AND \"practice_orders\".\"total_cents\"=\"practice_orders\".\"principal_cents\"+\"practice_orders\".\"fee_cents\""
+        }
+      }
+    },
+    "practice_order_progress": {
+      "name": "practice_order_progress",
+      "columns": {
+        "order_id": {
+          "name": "order_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fee_policy": {
+          "name": "fee_policy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'per_contract'"
+        },
+        "filled_quantity": {
+          "name": "filled_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "executed_principal_units": {
+          "name": "executed_principal_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "charged_fee_units": {
+          "name": "charged_fee_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "held_units": {
+          "name": "held_units",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "revision": {
+          "name": "revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "practice_order_progress_order_id_practice_orders_id_fk": {
+          "name": "practice_order_progress_order_id_practice_orders_id_fk",
+          "tableFrom": "practice_order_progress",
+          "tableTo": "practice_orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_progress_nonnegative": {
+          "name": "practice_progress_nonnegative",
+          "value": "\"practice_order_progress\".\"filled_quantity\">=0 AND \"practice_order_progress\".\"executed_principal_units\">=0 AND \"practice_order_progress\".\"charged_fee_units\">=0 AND \"practice_order_progress\".\"held_units\">=0 AND \"practice_order_progress\".\"revision\">=0"
+        }
+      }
+    },
+    "practice_wallets": {
+      "name": "practice_wallets",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "available_cents": {
+          "name": "available_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reserved_cents": {
+          "name": "reserved_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grant_id": {
+          "name": "grant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "practice_wallets_user_id_app_users_id_fk": {
+          "name": "practice_wallets_user_id_app_users_id_fk",
+          "tableFrom": "practice_wallets",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "practice_wallet_nonnegative": {
+          "name": "practice_wallet_nonnegative",
+          "value": "typeof(\"practice_wallets\".\"available_cents\")='integer' AND typeof(\"practice_wallets\".\"reserved_cents\")='integer' AND \"practice_wallets\".\"available_cents\">=0 AND \"practice_wallets\".\"reserved_cents\">=0 AND \"practice_wallets\".\"available_cents\"+\"practice_wallets\".\"reserved_cents\"=100000"
+        }
+      }
+    },
+    "app_profiles": {
+      "name": "app_profiles",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "app_profiles_user_id_app_users_id_fk": {
+          "name": "app_profiles_user_id_app_users_id_fk",
+          "tableFrom": "app_profiles",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "profile_name_length": {
+          "name": "profile_name_length",
+          "value": "length(\"app_profiles\".\"display_name\") <= 60"
+        }
+      }
+    },
+    "provider_events": {
+      "name": "provider_events",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_event_id": {
+          "name": "external_event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "payload_hash": {
+          "name": "payload_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "normalized_payload": {
+          "name": "normalized_payload",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "processing_status": {
+          "name": "processing_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'received'"
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_provider_event": {
+          "name": "uq_provider_event",
+          "columns": [
+            "connection_id",
+            "external_event_id"
+          ],
+          "isUnique": true
+        },
+        "idx_events_processing": {
+          "name": "idx_events_processing",
+          "columns": [
+            "processing_status",
+            "received_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "provider_events_connection_id_provider_connections_id_fk": {
+          "name": "provider_events_connection_id_provider_connections_id_fk",
+          "tableFrom": "provider_events",
+          "tableTo": "provider_connections",
+          "columnsFrom": [
+            "connection_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "event_processing_status": {
+          "name": "event_processing_status",
+          "value": "\"provider_events\".\"processing_status\" IN ('received','applied','quarantined')"
+        }
+      }
+    },
+    "cash_transfers": {
+      "name": "cash_transfers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connection_id": {
+          "name": "connection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "client_transfer_id": {
+          "name": "client_transfer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_transfer_id": {
+          "name": "external_transfer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "direction": {
+          "name": "direction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'USD'"
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'requested'"
+        },
+        "provider_revision": {
+          "name": "provider_revision",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_transfer_request": {
+          "name": "uq_transfer_request",
+          "columns": [
+            "account_id",
+            "client_transfer_id"
+          ],
+          "isUnique": true
+        },
+        "uq_transfer_external": {
+          "name": "uq_transfer_external",
+          "columns": [
+            "connection_id",
+            "account_id",
+            "external_transfer_id"
+          ],
+          "isUnique": true
+        },
+        "idx_transfers_user_created": {
+          "name": "idx_transfers_user_created",
+          "columns": [
+            "user_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cash_transfers_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk": {
+          "name": "cash_transfers_account_id_connection_id_user_id_linked_accounts_id_connection_id_user_id_fk",
+          "tableFrom": "cash_transfers",
+          "tableTo": "linked_accounts",
+          "columnsFrom": [
+            "account_id",
+            "connection_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "id",
+            "connection_id",
+            "user_id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "transfer_amount": {
+          "name": "transfer_amount",
+          "value": "typeof(\"cash_transfers\".\"amount_cents\") = 'integer' AND \"cash_transfers\".\"amount_cents\" BETWEEN -9007199254740991 AND 9007199254740991 AND \"cash_transfers\".\"amount_cents\" > 0"
+        },
+        "transfer_currency": {
+          "name": "transfer_currency",
+          "value": "\"cash_transfers\".\"currency\" = 'USD'"
+        },
+        "transfer_direction": {
+          "name": "transfer_direction",
+          "value": "\"cash_transfers\".\"direction\" IN ('deposit','withdrawal')"
+        },
+        "transfer_status": {
+          "name": "transfer_status",
+          "value": "\"cash_transfers\".\"status\" IN ('requested','unknown','pending','completed','failed','canceled','returned')"
+        },
+        "transfer_revision": {
+          "name": "transfer_revision",
+          "value": "\"cash_transfers\".\"provider_revision\" IS NULL OR (typeof(\"cash_transfers\".\"provider_revision\") = 'integer' AND \"cash_transfers\".\"provider_revision\" BETWEEN 1 AND 9007199254740991)"
+        }
+      }
+    },
+    "app_users": {
+      "name": "app_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "auth_subject": {
+          "name": "auth_subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_user_auth_subject": {
+          "name": "uq_user_auth_subject",
+          "columns": [
+            "auth_subject"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "user_status": {
+          "name": "user_status",
+          "value": "\"app_users\".\"status\" IN ('active','suspended','closed')"
+        }
+      }
+    },
+    "watchlist_entries": {
+      "name": "watchlist_entries",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "market_id": {
+          "name": "market_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "uq_watchlist_user_market": {
+          "name": "uq_watchlist_user_market",
+          "columns": [
+            "user_id",
+            "market_id"
+          ],
+          "isUnique": true
+        },
+        "idx_watchlist_user_created": {
+          "name": "idx_watchlist_user_created",
+          "columns": [
+            "user_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "watchlist_entries_user_id_app_users_id_fk": {
+          "name": "watchlist_entries_user_id_app_users_id_fk",
+          "tableFrom": "watchlist_entries",
+          "tableTo": "app_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

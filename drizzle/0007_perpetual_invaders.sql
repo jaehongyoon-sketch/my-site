@@ -1,0 +1,1 @@
+CREATE INDEX `practice_order_book` ON `practice_orders` (`event_id`,`status`,`outcome`,`price_cents`);

@@ -1,0 +1,1 @@
+CREATE INDEX `practice_cash_entry_user_time` ON `practice_cash_entries` (`user_id`,`created_at`);
