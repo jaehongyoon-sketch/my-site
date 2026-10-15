@@ -1,91 +1,412 @@
-# Event — Day 9
+<table><thead>
+  <tr>
+    <th>Linux</th>
+    <th>OS X</th>
+    <th>Windows</th>
+    <th>Coverage</th>
+    <th>Downloads</th>
+  </tr>
+</thead><tbody><tr>
+  <td colspan="2" align="center">
+    <a href="https://github.com/kaelzhang/node-ignore/actions/workflows/nodejs.yml">
+    <img
+      src="https://github.com/kaelzhang/node-ignore/actions/workflows/nodejs.yml/badge.svg"
+      alt="Build Status" /></a>
+  </td>
+  <td align="center">
+    <a href="https://ci.appveyor.com/project/kaelzhang/node-ignore">
+    <img
+      src="https://ci.appveyor.com/api/projects/status/github/kaelzhang/node-ignore?branch=master&svg=true"
+      alt="Windows Build Status" /></a>
+  </td>
+  <td align="center">
+    <a href="https://codecov.io/gh/kaelzhang/node-ignore">
+    <img
+      src="https://codecov.io/gh/kaelzhang/node-ignore/branch/master/graph/badge.svg"
+      alt="Coverage Status" /></a>
+  </td>
+  <td align="center">
+    <a href="https://www.npmjs.org/package/ignore">
+    <img
+      src="http://img.shields.io/npm/dm/ignore.svg"
+      alt="npm module downloads per month" /></a>
+  </td>
+</tr></tbody></table>
 
-미국 사용자가 기존 거래소의 예측시장을 거래하는 앱의 5일차 기반 코드.
-**현재는 fixture 기반 개발 버전이며, 실제 USD·주문·시세·제휴가 없다. Google 로그인과 앱 프로필 저장이 활성화되어 있다.**
+# ignore
 
-## 실행
+`ignore` is a manager, filter and parser which implemented in pure JavaScript according to the [.gitignore spec 2.22.1](http://git-scm.com/docs/gitignore).
 
-Node.js 22.13+와 npm 사용. 커밋된 package-lock.json을 유지한다.
+`ignore` is used by eslint, gitbook and [many others](https://www.npmjs.com/browse/depended/ignore).
+
+Pay **ATTENTION** that [`minimatch`](https://www.npmjs.org/package/minimatch) (which used by `fstream-ignore`) does not follow the gitignore spec.
+
+To filter filenames according to a .gitignore file, I recommend this npm package, `ignore`.
+
+To parse an `.npmignore` file, you should use `minimatch`, because an `.npmignore` file is parsed by npm using `minimatch` and it does not work in the .gitignore way.
+
+### Tested on
+
+`ignore` is fully tested, and has more than **five hundreds** of unit tests.
+
+- Linux + Node: `0.8` - `7.x`
+- Windows + Node: `0.10` - `7.x`, node < `0.10` is not tested due to the lack of support of appveyor.
+
+Actually, `ignore` does not rely on any versions of node specially.
+
+Since `4.0.0`, ignore will no longer support `node < 6` by default, to use in node < 6, `require('ignore/legacy')`. For details, see [CHANGELOG](https://github.com/kaelzhang/node-ignore/blob/master/CHANGELOG.md).
+
+## Table Of Main Contents
+
+- [Usage](#usage)
+- [`Pathname` Conventions](#pathname-conventions)
+- See Also:
+  - [`glob-gitignore`](https://www.npmjs.com/package/glob-gitignore) matches files using patterns and filters them according to gitignore rules.
+- [Upgrade Guide](#upgrade-guide)
+
+## Install
 
 ```sh
-npm ci
-npm run dev
+npm i ignore
 ```
 
-## 검증
+## Usage
 
-```sh
-node --experimental-strip-types --test tests/*.test.mjs
-npx tsc --noEmit
-npm run build
+```js
+import ignore from 'ignore'
+const ig = ignore().add(['.abc/*', '!.abc/d/'])
 ```
 
-프레임워크: 제공된 React/TypeScript Vinext starter(Next 호환 구조). API 경로는 서버에서 동작하며 Cloudflare Worker로 빌드 가능하다.
+### Filter the given paths
 
-## 오늘 사용할 수 있는 기능
+```js
+const paths = [
+  '.abc/a.js',    // filtered out
+  '.abc/d/e.js'   // included
+]
 
-- 영어 모바일 대응 시장 목록, 카테고리/검색, 페이지 세션 안의 관심 시장
-- 시장 상세, 판정 규칙/계약 정보
-- YES/NO, 정수 수량 1~10,000, 서버 기반 견적 검토
-- 앱 수수료 0.25% 계산, 거래소 수수료 미확정 표시, 실제 주문/거래소 계정 연결 차단
-- 분리된 도메인 계산과 provider 계약
+ig.filter(paths)        // ['.abc/d/e.js']
+ig.ignores('.abc/a.js') // true
+```
 
-## 경계
+### As the filter function
 
-- 제출 버튼이 disabled인 것만으로 보호하지 않는다. POST /api/orders도 항상 503.
-- API 견적은 indicative이며 실행 가능한 가격 보장이 아니다. 실제 최대 손실/총액은 수수료 연결 전 완성되지 않는다.
-- 브라우저 값은 신뢰하지 않는다. 서버가 fixture 가격과 수량 검증으로 다시 계산한다.
-- Google 전용 로그인과 D1 프로필 저장 구현. 실제 로그인 활성화에는 Google OAuth 설정이 필요하다.
-- 관심 시장은 활성 계정별로 DB에 저장되며 새로고침 후에도 유지된다.
-- 이후 실거래 구현에는 인증·인가·CSRF·속도 제한·파트너 권한·서버 비밀키 관리·대조/감사가 필수다.
+```js
+paths.filter(ig.createFilter()); // ['.abc/d/e.js']
+```
 
-문서: [30일 실행 계획](docs/30-DAY-PLAN.md), [제휴사 추가 지침](docs/INTEGRATIONS.md).
+### Win32 paths will be handled
 
-## 2일차 추가
+```js
+ig.filter(['.abc\\a.js', '.abc\\d\\e.js'])
+// if the code above runs on windows, the result will be
+// ['.abc\\d\\e.js']
+```
 
-계정·주문·체결·자금 모델과 11개 테이블의 SQL 스키마를 추가했다. 상태 전이/계정 정책/DB 제약을 포함한 총 33개 테스트가 있다.
-2일차 당시에는 로컬 검증만 완료했다. 4일차에는 운영 DB 바인딩과 앱 계정 저장을 추가했다.
+## Why another ignore?
 
-- [데이터 모델](docs/DATA-MODEL.md)
-- [상태 전이](docs/STATE-MACHINES.md)
-- [2일차 인계](docs/DAY-02-STATUS.md)
+- `ignore` is a standalone module, and is much simpler so that it could easy work with other programs, unlike [isaacs](https://npmjs.org/~isaacs)'s [fstream-ignore](https://npmjs.org/package/fstream-ignore) which must work with the modules of the fstream family.
 
-## 3일차 추가
+- `ignore` only contains utility methods to filter paths according to the specified ignore rules, so
+  - `ignore` never try to find out ignore rules by traversing directories or fetching from git configurations.
+  - `ignore` don't cares about sub-modules of git projects.
 
-Kalshi 공식 공개 조회 API에 맞춘 서버용 연결부와 오류/정밀도 테스트를 추가했다. 현재 실행 경로에는 등록하지 않았으며 실제 시세를 호출하지 않는다. 상업적 데이터 표시/재배포와 제3자 거래 지원 권한 및 비용 확인이 먼저 필요하다.
+- Exactly according to [gitignore man page](http://git-scm.com/docs/gitignore), fixes some known matching issues of fstream-ignore, such as:
+  - '`/*.js`' should only match '`a.js`', but not '`abc/a.js`'.
+  - '`**/foo`' should match '`foo`' anywhere.
+  - Prevent re-including a file if a parent directory of that file is excluded.
+  - Handle trailing whitespaces:
+    - `'a '`(one space) should not match `'a  '`(two spaces).
+    - `'a \ '` matches `'a  '`
+  - All test cases are verified with the result of `git check-ignore`.
 
-- [Kalshi 사용 범위와 연결 방법](docs/KALSHI-API-REVIEW.md)
-- [제휴 검토용 제품 설명](docs/PARTNER-BRIEF.md)
-- [제휴 질문서](docs/PARTNER-QUESTIONS.md)
-- [3일차 인계](docs/DAY-03-STATUS.md)
+# Methods
 
-## 4일차 추가
+## .add(pattern: string | Ignore): this
+## .add(patterns: Array<string | Ignore>): this
 
-Google 전용 인증, 서버 세션, 프로필 생성/수정/비활성화/재활성화와 로그아웃을 구현했다. ChatGPT 앱 로그인은 제거했다. Google 인증 정보 등록 전까지 실제 로그인은 비활성화된다.
+- **pattern** `String | Ignore` An ignore pattern string, or the `Ignore` instance
+- **patterns** `Array<String | Ignore>` Array of ignore patterns.
 
-앱 trading fee는 contract cost의 0.25%이며 주문당 센트 단위 반올림한다. $100 계약 금액 → $0.25 수수료. 거래소 수수료는 별도이며 실제 청구는 없다.
+Adds a rule or several rules to the current manager.
 
-- [4일차 인계](docs/DAY-04-STATUS.md)
-- [Google 로그인 활성화](docs/GOOGLE-LOGIN-SETUP.md)
+Returns `this`
 
-## 5일차 추가
+Notice that a line starting with `'#'`(hash) is treated as a comment. Put a backslash (`'\'`) in front of the first hash for patterns that begin with a hash, if you want to ignore a file with a hash at the beginning of the filename.
 
-`/admin` 관리자 전용 등록 계정/세션 집계, 서버 환경 변수로 지정하는 관리자 계정, 사용자별 관심 시장 영구 저장을 추가했다. [5일차 인계](docs/DAY-05-STATUS.md). 이전 일차의 인증 정보 설정 대기 사항은 해소되었으며 실제 로그인·프로필 저장을 사용자 화면에서 확인했다.
+```js
+ignore().add('#abc').ignores('#abc')    // false
+ignore().add('\\#abc').ignores('#abc')   // true
+```
 
-## Day 6 — Provider approval management
+`pattern` could either be a line of ignore pattern or a string of multiple ignore patterns, which means we could just `ignore().add()` the content of a ignore file:
 
-Administrators can open `/admin/providers` from the Accounts page to record Kalshi sandbox/live reviews. Status changes require a reason, approved records require an approval reference, and live connections cannot enter sandbox testing. Every change is persisted with its actor and revision; stale writes return 409. Approval records do not enable adapters or trading. See `docs/DAY-06.md`.
+```js
+ignore()
+.add(fs.readFileSync(filenameOfGitignore).toString())
+.filter(filenames)
+```
 
-## Day 7 — Own events and name-change cooldown
+`pattern` could also be an `ignore` instance, so that we could easily inherit the rules of another `Ignore` instance.
 
-The active home page and `/api/markets` now serve Event-owned records from D1, not sample fixtures or Kalshi. Administrators create, edit drafts, publish and archive at `/admin/events`. Published terms are locked. Search, categories, closing-status filters, 12-item pages, detail rules and saved-event browsing are connected. No generated prices, quotes, settlement or real-money execution. Kalshi code remains inactive historical groundwork.
+## <strike>.addIgnoreFile(path)</strike>
 
-Ordinary accounts can change their display name once per 7 days. Initial profile creation does not consume a change; existing profiles get their first change after this release immediately. Same-name saves do not reset the timer. Administrators are exempt by server account ID. The cooldown survives deactivation; reactivation with the previous name retains its deadline. See `docs/DAY-07.md`.
+REMOVED in `3.x` for now.
 
-## Day 8 — Market status and price contract
+To upgrade `ignore@2.x` up to `3.x`, use
 
-Event details now show checked market state, price/source availability, automatic closure and manual/15-second refresh. There is no live price feed; all current prices are null. Staleness and full-snapshot reconciliation rules are tested for a later internal order-book adapter. Quotes validate event visibility and expiry but never execute. See `docs/DAY-08.md`.
+```js
+import fs from 'fs'
 
-## Day 9 — Limit-buy review
+if (fs.existsSync(filename)) {
+  ignore().add(fs.readFileSync(filename).toString())
+}
+```
 
-Active signed-in profiles can review an own-event limit buy from the detail page. The server validates the account, event revision/deadline, whole-cent limit and whole-contract quantity; independently computes cost plus the 0.25% fee; and returns a short-lived, non-executable review. No order, reservation or payment is created. See `docs/DAY-09.md`.
+instead.
+
+## .filter(paths: Array&lt;Pathname&gt;): Array&lt;Pathname&gt;
+
+```ts
+type Pathname = string
+```
+
+Filters the given array of pathnames, and returns the filtered array.
+
+- **paths** `Array.<Pathname>` The array of `pathname`s to be filtered.
+
+### `Pathname` Conventions:
+
+#### 1. `Pathname` should be a `path.relative()`d pathname
+
+`Pathname` should be a string that have been `path.join()`ed, or the return value of `path.relative()` to the current directory,
+
+```js
+// WRONG, an error will be thrown
+ig.ignores('./abc')
+
+// WRONG, for it will never happen, and an error will be thrown
+// If the gitignore rule locates at the root directory,
+// `'/abc'` should be changed to `'abc'`.
+// ```
+// path.relative('/', '/abc')  -> 'abc'
+// ```
+ig.ignores('/abc')
+
+// WRONG, that it is an absolute path on Windows, an error will be thrown
+ig.ignores('C:\\abc')
+
+// Right
+ig.ignores('abc')
+
+// Right
+ig.ignores(path.join('./abc'))  // path.join('./abc') -> 'abc'
+```
+
+In other words, each `Pathname` here should be a relative path to the directory of the gitignore rules.
+
+Suppose the dir structure is:
+
+```
+/path/to/your/repo
+    |-- a
+    |   |-- a.js
+    |
+    |-- .b
+    |
+    |-- .c
+         |-- .DS_store
+```
+
+Then the `paths` might be like this:
+
+```js
+[
+  'a/a.js'
+  '.b',
+  '.c/.DS_store'
+]
+```
+
+#### 2. filenames and dirnames
+
+`node-ignore` does NO `fs.stat` during path matching, so for the example below:
+
+```js
+// First, we add a ignore pattern to ignore a directory
+ig.add('config/')
+
+// `ig` does NOT know if 'config', in the real world,
+//   is a normal file, directory or something.
+
+ig.ignores('config')
+// `ig` treats `config` as a file, so it returns `false`
+
+ig.ignores('config/')
+// returns `true`
+```
+
+Specially for people who develop some library based on `node-ignore`, it is important to understand that.
+
+Usually, you could use [`glob`](http://npmjs.org/package/glob) with `option.mark = true` to fetch the structure of the current directory:
+
+```js
+import glob from 'glob'
+
+glob('**', {
+  // Adds a / character to directory matches.
+  mark: true
+}, (err, files) => {
+  if (err) {
+    return console.error(err)
+  }
+
+  let filtered = ignore().add(patterns).filter(files)
+  console.log(filtered)
+})
+```
+
+## .ignores(pathname: Pathname): boolean
+
+> new in 3.2.0
+
+Returns `Boolean` whether `pathname` should be ignored.
+
+```js
+ig.ignores('.abc/a.js')    // true
+```
+
+## .createFilter()
+
+Creates a filter function which could filter an array of paths with `Array.prototype.filter`.
+
+Returns `function(path)` the filter function.
+
+## .test(pathname: Pathname) since 5.0.0
+
+Returns `TestResult`
+
+```ts
+interface TestResult {
+  ignored: boolean
+  // true if the `pathname` is finally unignored by some negative pattern
+  unignored: boolean
+}
+```
+
+- `{ignored: true, unignored: false}`: the `pathname` is ignored
+- `{ignored: false, unignored: true}`: the `pathname` is unignored
+- `{ignored: false, unignored: false}`: the `pathname` is never matched by any ignore rules.
+
+## static `ignore.isPathValid(pathname): boolean` since 5.0.0
+
+Check whether the `pathname` is an valid `path.relative()`d path according to the [convention](#1-pathname-should-be-a-pathrelatived-pathname).
+
+This method is **NOT** used to check if an ignore pattern is valid.
+
+```js
+ignore.isPathValid('./foo')  // false
+```
+
+## ignore(options)
+
+### `options.ignorecase` since 4.0.0
+
+Similar as the `core.ignorecase` option of [git-config](https://git-scm.com/docs/git-config), `node-ignore` will be case insensitive if `options.ignorecase` is set to `true` (the default value), otherwise case sensitive.
+
+```js
+const ig = ignore({
+  ignorecase: false
+})
+
+ig.add('*.png')
+
+ig.ignores('*.PNG')  // false
+```
+
+### `options.ignoreCase?: boolean` since 5.2.0
+
+Which is alternative to `options.ignoreCase`
+
+### `options.allowRelativePaths?: boolean` since 5.2.0
+
+This option brings backward compatibility with projects which based on `ignore@4.x`. If `options.allowRelativePaths` is `true`, `ignore` will not check whether the given path to be tested is [`path.relative()`d](#pathname-conventions).
+
+However, passing a relative path, such as `'./foo'` or `'../foo'`, to test if it is ignored or not is not a good practise, which might lead to unexpected behavior
+
+```js
+ignore({
+  allowRelativePaths: true
+}).ignores('../foo/bar.js') // And it will not throw
+```
+
+****
+
+# Upgrade Guide
+
+## Upgrade 4.x -> 5.x
+
+Since `5.0.0`, if an invalid `Pathname` passed into `ig.ignores()`, an error will be thrown, unless `options.allowRelative = true` is passed to the `Ignore` factory.
+
+While `ignore < 5.0.0` did not make sure what the return value was, as well as
+
+```ts
+.ignores(pathname: Pathname): boolean
+
+.filter(pathnames: Array<Pathname>): Array<Pathname>
+
+.createFilter(): (pathname: Pathname) => boolean
+
+.test(pathname: Pathname): {ignored: boolean, unignored: boolean}
+```
+
+See the convention [here](#1-pathname-should-be-a-pathrelatived-pathname) for details.
+
+If there are invalid pathnames, the conversion and filtration should be done by users.
+
+```js
+import {isPathValid} from 'ignore' // introduced in 5.0.0
+
+const paths = [
+  // invalid
+  //////////////////
+  '',
+  false,
+  '../foo',
+  '.',
+  //////////////////
+
+  // valid
+  'foo'
+]
+.filter(isValidPath)
+
+ig.filter(paths)
+```
+
+## Upgrade 3.x -> 4.x
+
+Since `4.0.0`, `ignore` will no longer support node < 6, to use `ignore` in node < 6:
+
+```js
+var ignore = require('ignore/legacy')
+```
+
+## Upgrade 2.x -> 3.x
+
+- All `options` of 2.x are unnecessary and removed, so just remove them.
+- `ignore()` instance is no longer an [`EventEmitter`](nodejs.org/api/events.html), and all events are unnecessary and removed.
+- `.addIgnoreFile()` is removed, see the [.addIgnoreFile](#addignorefilepath) section for details.
+
+****
+
+# Collaborators
+
+- [@whitecolor](https://github.com/whitecolor) *Alex*
+- [@SamyPesse](https://github.com/SamyPesse) *Samy Pessé*
+- [@azproduction](https://github.com/azproduction) *Mikhail Davydov*
+- [@TrySound](https://github.com/TrySound) *Bogdan Chadkin*
+- [@JanMattner](https://github.com/JanMattner) *Jan Mattner*
+- [@ntwb](https://github.com/ntwb) *Stephen Edgar*
+- [@kasperisager](https://github.com/kasperisager) *Kasper Isager*
+- [@sandersn](https://github.com/sandersn) *Nathan Shively-Sanders*
