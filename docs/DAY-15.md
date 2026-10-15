@@ -1,0 +1,17 @@
+# Day 15 — practice cash journal and funding boundary
+
+`/practice/activity`, linked from the practice portfolio, provides an authenticated funds summary and cash activity. Users can filter grants, buy reservations, fills and reservation releases, with 25 records per page. Each record shows its available/reserved changes, fill cost and actual fee where applicable, timestamp and reference. Entries with equal timestamps use a stable display order, not a claimed execution sequence. Sell share reservations remain in the portfolio because they do not move cash.
+
+The read-only journal combines `practice_cash_entries` with `practice_match_entries`. It never also reads the Day 10 `practice_ledger`, which was already migrated into the cash entries. Full-history totals and current cash are read with the page and filtered count in one D1 batch. Available, reserved and spent totals are compared exactly in integer 1/400-cent units. A discrepancy is displayed without rewriting balances. Filters/pages do not change totals. Reading activity does not release expired orders; the existing portfolio refresh/order actions perform that lifecycle work.
+
+`GET /api/practice/journal` requires an active session/account, scopes both sources to the server-derived account ID, rejects unknown filters and returns private/no-store data. Index migration 0010 adds `(user_id, created_at)` for the cash source; it contains no backfill or balance change.
+
+`GET /api/funding` reports the actual current connection: not connected, deposits disabled, withdrawals disabled, virtual funds not withdrawable, no app-submitted transfers. `POST /api/funding` checks authentication, origin and strict request shape, then rejects every valid request with 503/FUNDING_NOT_CONNECTED. It does not create a fake pending transfer, write a ledger entry or invoke a payment provider. The UI does not collect bank/card information or accept deposit/withdrawal submissions.
+
+`lib/funding/model.ts` defines a provider interface with integer USD-cent amounts, request idempotency keys and server-verified account references. A pure transition model distinguishes pending, processing, succeeded, failed, cancelled and reversed; duplicate status reports are harmless and terminal states cannot reopen. The disconnected implementation always rejects. This is a contract for later integration, not an operational payment adapter or webhook endpoint.
+
+Before connecting a provider, implement its verified account mapping, provider-side idempotency, signed webhook validation, durable event deduplication, atomic real-money accounting, reversal handling and reconciliation, alongside confirmed operational approvals. Practice funds must not become real withdrawable balances. Existing provider-review records are not payment activation switches.
+
+Validation: full automated suite (143 tests), exact legacy grant handling, price improvement and partial fills, cancellation/expiry releases, sub-cent fees, account isolation, independent pagination/totals, discrepancy detection, index use, disabled funding and transition rules. Disposable local HTTP accounts verify authenticated journal responses, funding rejection, CSRF, strict inputs, unchanged balances and page rendering. No production test accounts or transfers are created.
+
+Day 16 remains user verification and trading eligibility policy. Sell execution, real funding and settlement are still unavailable.

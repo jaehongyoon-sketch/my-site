@@ -1,0 +1,11 @@
+# Day 14 — practice sell validation and holding reservations
+
+The practice portfolio now shows held, reserved and available contracts per event/outcome, plus an account-wide reserved total. Users review quantity, a 1–99¢ limit and estimated proceeds/0.25%-per-contract fees before reserving shares. A separate, independently paginated sell history supports confirmed cancellation. Sell execution is not connected: reservations never create fills, credit proceeds, charge fees or alter recorded acquisition cost. Existing YES/NO pair execution still sums to $1.
+
+Server admission derives account identity from the session and atomically checks active account, published/current event revision, deadline and available shares. Availability equals all recorded buy fills minus open sell reservations for the same user, event and outcome. Neither pending buy orders nor another user's holdings qualify. Permanent per-user request keys deduplicate retries; changed terms conflict. A client retains its request key on uncertain responses.
+
+Migration 0009 adds empty sell reservation and share journal tables. Each accepted reservation has one positive share entry. Cancellation and lazy deadline/hidden/revised-event cleanup produce one negative entry in the same batch as the state transition. Repeated cancellation cannot release twice. Historical orders and fills are retained. A replay of a closed reservation returns its durable result without reopening it. This is a practice-only service; real order submission remains disabled.
+
+Automated tests cover concurrent admission, retry conflicts, overselling, outcome/account isolation, stale/closed/hidden events, suspension, rollback, release-once behavior, independent pagination, strict inputs and unchanged cash/fills. Local HTTP verification uses disposable accounts only and checks authenticated routes, cross-origin rejection, ownership, reservation/cancellation and exact fee estimates. All amounts remain integer 1/400-cent units on the server.
+
+Next: Day 15 practice ledger and external funding interfaces. A sell matcher and settlement must be implemented and reconciled before sell reservations can execute; this version does not imply that capability.
