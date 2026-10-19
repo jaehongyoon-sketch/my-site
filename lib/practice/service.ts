@@ -155,6 +155,12 @@ export async function practiceAccount(
   const positions = (results[3].results as PracticePosition[]).map((p) => ({
     ...p,
     availableQuantity: p.quantity - p.reservedQuantity,
+    marketValueUnits:
+      p.markCents == null ? null : p.quantity * p.markCents * 400,
+    unrealizedPnlUnits:
+      p.markCents == null
+        ? null
+        : p.quantity * p.markCents * 400 - p.costBasisUnits,
   }));
   const positionTotals = results[4].results[0] as PositionTotals;
   const sellOrders = results[5].results as SellOrder[];
