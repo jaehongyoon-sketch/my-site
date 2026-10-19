@@ -1,192 +1,257 @@
 "use client";
 import { useEffect, useState } from "react";
-import { marketStateSchema, type MarketState } from "@/lib/events/market-state";
+import { marketDataSchema, type MarketData } from "@/lib/practice/market";
 import { Button } from "@/components/ui/button";
-const messages = {
-  EVENT_HIDDEN: "This event is no longer published.",
-  EVENT_CLOSED: "The event has closed. Its result has not been determined.",
-  EVENT_INVALID: "The event status needs review.",
-  PRICE_UNAVAILABLE:
-    "No price feed is connected. Prices will appear when the Event order book is available.",
-  PRICE_STALE: "Prices are out of date. Waiting for a new snapshot.",
-  PRICE_INVALID: "The latest prices could not be verified.",
-  EXECUTION_UNAVAILABLE: "Order acceptance is not connected yet.",
-};
-export default function MarketPanel({ initial }: { initial: MarketState }) {
-  const [data, setData] = useState<MarketState | null>(initial),
+export default function MarketPanel({ eventId }: { eventId: string }) {
+  const [data, setData] = useState<MarketData | null>(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false),
-    [elapsed, setElapsed] = useState(0),
     [retry, setRetry] = useState(0);
   useEffect(() => {
     let stopped = false,
-      inFlight = false;
-    let controller: AbortController | null = null;
-    let receivedAt = performance.now();
+      pending = false;
+    const controller = new AbortController();
     async function refresh() {
-      if (stopped || inFlight || document.hidden) return;
-      inFlight = true;
-      controller = new AbortController();
-      setBusy(true);
-      const timeout = setTimeout(() => controller?.abort(), 8000);
+      if (pending || document.hidden || stopped) return;
+      pending = true;
       try {
-        const r = await fetch(`/api/events/${initial.eventId}/market-state`, {
+        const response = await fetch(`/api/events/${eventId}/market`, {
           cache: "no-store",
-          signal: controller.signal,
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(8000),
+          ]),
         });
-        if (!r.ok)
-          throw new Error(
-            r.status === 404
-              ? "This event is no longer available."
-              : "Status check failed. Prices are hidden until the connection recovers.",
-          );
-        const next = marketStateSchema.parse(await r.json());
-        if (next.eventId !== initial.eventId)
-          throw new Error("Unexpected event status.");
+        if (!response.ok)
+          throw Error("Unable to refresh market. Please retry.");
+        const next = marketDataSchema.parse(await response.json());
+        if (next.eventId !== eventId)
+          throw Error("Unexpected market response.");
         if (!stopped) {
           setData(next);
           setError("");
-          receivedAt = performance.now();
-          setElapsed(0);
         }
-      } catch (e) {
+      } catch {
         if (!stopped) {
           setData(null);
-          setError(
-            e instanceof Error && e.name !== "AbortError"
-              ? e.message
-              : "Connection timed out. Please retry.",
-          );
+          setError("Market connection unavailable. Please retry.");
         }
       } finally {
-        clearTimeout(timeout);
-        inFlight = false;
-        if (!stopped) setBusy(false);
+        pending = false;
       }
     }
-    const tick = setInterval(
-      () => setElapsed(performance.now() - receivedAt),
-      1000,
-    );
-    const poll = setInterval(() => void refresh(), 15000);
-    const resume = () => {
-      if (!document.hidden) {
-        setData(null);
-        void refresh();
-      }
-    };
-    document.addEventListener("visibilitychange", resume);
     const offline = () => {
-      controller?.abort();
       setData(null);
-      setError("You are offline. Reconnect to check event status.");
+      setError("Offline. Reconnect to refresh prices.");
     };
+    const timer = setInterval(() => void refresh(), 5000);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("market-order-updated", refresh);
+    window.addEventListener("online", refresh);
     window.addEventListener("offline", offline);
-    window.addEventListener("online", resume);
     void refresh();
     return () => {
       stopped = true;
-      controller?.abort();
-      clearInterval(tick);
-      clearInterval(poll);
-      document.removeEventListener("visibilitychange", resume);
-      window.removeEventListener("online", resume);
+      controller.abort();
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("market-order-updated", refresh);
+      window.removeEventListener("online", refresh);
       window.removeEventListener("offline", offline);
     };
-  }, [initial.eventId, retry]);
-  const serverNow = data ? Date.parse(data.checkedAt) + elapsed : 0;
-  const closed =
-    !!data &&
-    (data.phase === "closed" || Date.parse(data.closesAt) <= serverNow);
-  const stale =
-    !!data?.priceValidUntil && Date.parse(data.priceValidUntil) <= serverNow;
-  const showPrices =
-    !!data &&
-    !closed &&
-    !stale &&
-    data.phase === "upcoming" &&
-    data.pricing === "fresh";
-  const code = closed
-    ? "EVENT_CLOSED"
-    : stale
-      ? "PRICE_STALE"
-      : data?.blockCode;
-  const price = (value: number | null | undefined) =>
-    showPrices && value != null ? `${value}¢` : "—";
+  }, [eventId, retry]);
+  const last = data?.lastYesCents,
+    previous = data?.previousYesCents;
+  const change = last != null && previous != null ? last - previous : null;
+  const trades = data?.trades ?? [];
+  const start = Date.parse(trades[0]?.at ?? ""),
+    end = Date.parse(trades.at(-1)?.at ?? "");
+  const x = (i: number) =>
+    end > start
+      ? 10 + (580 * (Date.parse(trades[i].at) - start)) / (end - start)
+      : 10 + (580 * i) / Math.max(1, trades.length - 1);
+  const path = trades
+    .map((t, i) => `${x(i)},${210 - t.yesCents * 2}`)
+    .join(" ");
+  function choose(outcome: "yes" | "no", price: number) {
+    window.dispatchEvent(
+      new CustomEvent("market-price-selected", {
+        detail: { eventId, outcome, price },
+      }),
+    );
+    document
+      .getElementById("order-entry")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   return (
-    <section className="account-card market-status-panel" aria-busy={busy}>
+    <section className="account-card exchange-panel" aria-label="Event market">
       <div className="market-status-heading">
         <div>
-          <p className="eyebrow">MARKET STATUS</p>
-          <h2>
-            {error
-              ? "Status unavailable"
-              : closed
-                ? "Closed · Awaiting result"
-                : "Live trading not available"}
-          </h2>
+          <h2>{data?.closed ? "Market closed" : "Market"}</h2>
+          <p className="account-caption">
+            Virtual funds · Updates every 5 seconds
+          </p>
         </div>
-        <Button
-          variant="outline"
-          disabled={busy}
-          onClick={() => setRetry((v) => v + 1)}
-        >
-          {busy ? "Checking…" : "Refresh status"}
+        <Button variant="outline" onClick={() => setRetry((v) => v + 1)}>
+          Refresh
         </Button>
       </div>
-      <p role={error ? "alert" : "status"}>
-        {error || (code ? messages[code] : "Checking current event status…")}
-      </p>
-      <div className="event-price-grid">
-        <div>
-          <span>YES price</span>
-          <strong>{price(data?.yesAskCents)}</strong>
-        </div>
-        <div>
-          <span>NO price</span>
-          <strong>{price(data?.noAskCents)}</strong>
-        </div>
-      </div>
-      <p className="account-caption">
-        A dash means no verified price. It does not mean 0¢ or a 50% chance.
-      </p>
-      <dl className="market-status-facts">
-        <div>
-          <dt>Price source</dt>
-          <dd>
-            {data?.priceSource === "event-orderbook"
-              ? "Event order book"
-              : "Not connected"}
-          </dd>
-        </div>
-        <div>
-          <dt>Price updated</dt>
-          <dd>
-            {data?.priceAsOf
-              ? data.priceAsOf.replace("T", " ").slice(0, 19) + " UTC"
-              : "No price received"}
-          </dd>
-        </div>
-        <div>
-          <dt>Status checked</dt>
-          <dd>
-            {data
-              ? data.checkedAt.replace("T", " ").slice(0, 19) + " UTC"
-              : "Not confirmed"}
-          </dd>
-        </div>
-        <div>
-          <dt>App trading fee</dt>
-          <dd>0.25% of contract cost · Not charged yet</dd>
-        </div>
-      </dl>
-      <Button disabled className="market-disabled-order">
-        {closed ? "Event closed" : "Live orders unavailable"}
-      </Button>
-      <p className="account-caption">
-        Status checks every 15 seconds while this page is visible. No order or
-        payment is submitted.
-      </p>
+      {error && <p role="alert">{error}</p>}
+      {data && (
+        <>
+          {data.paused && <p role="status">Trading is paused.</p>}
+          <div className="exchange-price">
+            <strong>{last == null ? "—" : `${last}¢`}</strong>
+            <span>YES · Last trade</span>
+            {change != null && (
+              <span className={change >= 0 ? "price-up" : "price-down"}>
+                {change > 0 ? "+" : ""}
+                {change}¢ since previous trade
+              </span>
+            )}
+          </div>
+          {trades.length ? (
+            <>
+              <svg
+                viewBox="0 0 620 230"
+                className="price-chart"
+                role="img"
+                aria-label={`YES trade history, ${trades.length} most recent trades. Latest price ${last} cents.`}
+              >
+                {[0, 50, 100].map((v) => (
+                  <g key={v}>
+                    <line
+                      x1="10"
+                      x2="590"
+                      y1={210 - v * 2}
+                      y2={210 - v * 2}
+                      stroke="currentColor"
+                      opacity="0.12"
+                    />
+                    <text
+                      x="595"
+                      y={214 - v * 2}
+                      fontSize="10"
+                      fill="currentColor"
+                    >
+                      {v}¢
+                    </text>
+                  </g>
+                ))}
+                <polyline
+                  points={path}
+                  fill="none"
+                  stroke="#187754"
+                  strokeWidth="3"
+                />
+                {trades.map((t, i) => (
+                  <circle
+                    key={t.id}
+                    cx={x(i)}
+                    cy={210 - t.yesCents * 2}
+                    r={trades.length === 1 ? 4 : 2}
+                    fill="#187754"
+                  >
+                    <title>
+                      {t.at} · YES {t.yesCents}¢ · {t.quantity} contracts
+                    </title>
+                  </circle>
+                ))}
+              </svg>
+              <div className="chart-dates">
+                <time>{trades[0].at.replace("T", " ").slice(0, 19)} UTC</time>
+                <time>
+                  {trades.at(-1)?.at.replace("T", " ").slice(0, 19)} UTC
+                </time>
+              </div>
+            </>
+          ) : (
+            <p className="exchange-empty">
+              No trades yet. Place a limit order to open the market.
+            </p>
+          )}
+          <p className="account-caption">
+            {data.volume.toLocaleString()} matched pairs ·{" "}
+            {data.lastTradedAt
+              ? `Last traded ${data.lastTradedAt.replace("T", " ").slice(0, 19)} UTC`
+              : "Awaiting first trade"}
+          </p>
+          {!data.closed && (
+            <div className="exchange-books">
+              {(["yes", "no"] as const).map((outcome) => {
+                const opposing = data.bids
+                  .filter((b) => b.outcome !== outcome)
+                  .slice(0, 5);
+                return (
+                  <div key={outcome}>
+                    <h3>Buy {outcome.toUpperCase()}</h3>
+                    {opposing.length ? (
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Price</th>
+                            <th>Contracts</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {opposing.map((b) => (
+                            <tr key={b.price}>
+                              <td>
+                                <button
+                                  type="button"
+                                  disabled={data.paused}
+                                  onClick={() => choose(outcome, 100 - b.price)}
+                                >
+                                  {100 - b.price}¢
+                                </button>
+                              </td>
+                              <td>{b.quantity.toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p>No matching orders</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p className="account-caption">
+            Prices come from matched YES/NO orders. A pair totals $1 before
+            fees. Available quantities may change; your own orders cannot match
+            each other.
+          </p>
+          <details>
+            <summary>Recent trades</summary>
+            <div className="trade-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time (UTC)</th>
+                    <th>YES</th>
+                    <th>NO</th>
+                    <th>Contracts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...trades]
+                    .reverse()
+                    .slice(0, 20)
+                    .map((t) => (
+                      <tr key={t.id}>
+                        <td>{t.at.replace("T", " ").slice(0, 19)}</td>
+                        <td>{t.yesCents}¢</td>
+                        <td>{100 - t.yesCents}¢</td>
+                        <td>{t.quantity}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </>
+      )}
     </section>
   );
 }

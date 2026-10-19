@@ -27,6 +27,30 @@ export default function OrderPreviewPanel({
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const validUntil = useRef(0);
+  useEffect(() => {
+    const selectPrice = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail?.eventId !== eventId || submissionLocked) return;
+      if (
+        !["yes", "no"].includes(detail.outcome) ||
+        !Number.isInteger(detail.price) ||
+        detail.price < 1 ||
+        detail.price > 99
+      )
+        return;
+      generation.current++;
+      controller.current?.abort();
+      setBusy(false);
+      setOutcome(detail.outcome);
+      setPrice(String(detail.price));
+      setPreview(null);
+      setExpired(false);
+      setError("");
+    };
+    window.addEventListener("market-price-selected", selectPrice);
+    return () =>
+      window.removeEventListener("market-price-selected", selectPrice);
+  }, [eventId, submissionLocked]);
   useEffect(
     () => () => {
       generation.current++;
@@ -124,7 +148,7 @@ export default function OrderPreviewPanel({
     }
   }
   return (
-    <section className="account-card order-preview-panel">
+    <section id="order-entry" className="account-card order-preview-panel">
       <p className="eyebrow">LIMIT BUY · PRACTICE</p>
       <h2>Plan a limit buy</h2>
       <p>

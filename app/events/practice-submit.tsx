@@ -62,6 +62,7 @@ export default function PracticeSubmit({
       if (d.mode !== "practice" || !d.order?.id)
         throw Error("Result not confirmed. Retry the same request.");
       setReceipt(d.order.id);
+      window.dispatchEvent(new Event("market-order-updated"));
       setUncertain(false);
       onLock(false);
     } catch (e) {

@@ -18,10 +18,6 @@ export default function Positions({
   return (
     <section aria-labelledby="holdings-title">
       <h2 id="holdings-title">Your holdings</h2>
-      <p>
-        Filled practice contracts only. YES and NO are separate holdings. Open
-        orders and cancelled quantities are excluded.
-      </p>
       {!data.positionsReconciled && (
         <p role="alert" className="account-error">
           Holdings costs and the practice cash record do not agree. Refresh
@@ -29,6 +25,22 @@ export default function Positions({
         </p>
       )}
       <dl className="market-status-facts account-card">
+        <div>
+          <dt>Estimated market value</dt>
+          <dd>{usd(totals.marketValueUnits / 400)}</dd>
+        </div>
+        <div>
+          <dt>Unrealized profit / loss</dt>
+          <dd
+            className={
+              totals.marketValueUnits >= totals.markedCostUnits
+                ? "price-up"
+                : "price-down"
+            }
+          >
+            {usd((totals.marketValueUnits - totals.markedCostUnits) / 400)}
+          </dd>
+        </div>
         <div>
           <dt>Contracts held</dt>
           <dd>{totals.quantity.toLocaleString("en-US")}</dd>
@@ -51,9 +63,11 @@ export default function Positions({
         </div>
       </dl>
       <p className="account-caption">
-        Totals include all fills, across all pages. Market value and profit/loss
-        are unavailable until a reliable price source is connected. No results
-        or payouts have been settled.
+        Valued at each event’s last trade, including purchase fees in
+        profit/loss. This is an estimate, not a guaranteed sale price or a
+        settled payout.
+        {totals.unpricedPositions > 0 &&
+          ` ${totals.unpricedPositions} unpriced positions excluded.`}
       </p>
       {!data.positions.length && (
         <p>
@@ -79,6 +93,30 @@ export default function Positions({
             )}
           </h3>
           <dl className="market-status-facts">
+            <div>
+              <dt>Last trade price</dt>
+              <dd>{p.markCents == null ? "—" : `${p.markCents}¢`}</dd>
+            </div>
+            <div>
+              <dt>Estimated market value</dt>
+              <dd>
+                {p.marketValueUnits == null
+                  ? "—"
+                  : usd(p.marketValueUnits / 400)}
+              </dd>
+            </div>
+            <div>
+              <dt>Unrealized profit / loss</dt>
+              <dd
+                className={
+                  (p.unrealizedPnlUnits ?? 0) >= 0 ? "price-up" : "price-down"
+                }
+              >
+                {p.unrealizedPnlUnits == null
+                  ? "—"
+                  : usd(p.unrealizedPnlUnits / 400)}
+              </dd>
+            </div>
             <div>
               <dt>Average fill price</dt>
               <dd>{usd(p.principalUnits / 400 / p.quantity)}</dd>
@@ -110,6 +148,8 @@ export default function Positions({
             Event deadline: {p.closesAt.replace("T", " ")}
             <br />
             Last fill: {p.lastFilledAt.replace("T", " ")}
+            <br />
+            Price observed: {p.markAt?.replace("T", " ") ?? "Unavailable"}
           </p>
           <ReserveSell position={p} disabled={busy} onComplete={onComplete} />
         </article>

@@ -1,7 +1,4 @@
-import {
-  loadKalshiCatalog,
-  type CatalogEvent,
-} from "@/lib/providers/kalshi/catalog";
+import { readLastPrices } from "@/lib/practice/market";
 import { getGoogleUser } from "@/lib/auth/google";
 import { activeAccount } from "@/lib/accounts/access";
 import { env } from "cloudflare:workers";
@@ -51,24 +48,22 @@ const categories = [
     tone: "purple",
   },
 ];
-type EventItem =
-  Awaited<ReturnType<typeof listOwnEvents>>["events"][number] | CatalogEvent;
-function EventCard({ event, now }: { event: EventItem; now: string }) {
+type EventItem = Awaited<ReturnType<typeof listOwnEvents>>["events"][number];
+function EventCard({
+  event,
+  now,
+  price,
+}: {
+  event: EventItem;
+  now: string;
+  price?: number;
+}) {
   const category =
     categories.find((c) => c.name === event.category) ?? categories[5];
   const Icon = category.icon;
   const closed = event.closesAt <= now;
-  const external =
-    "source" in event && event.source === "kalshi" ? event : null;
-  const cents = (v: string | null) =>
-    v === null ? "—" : `${Number((Number(v) * 100).toFixed(2))}¢`;
   return (
-    <a
-      className="market-card"
-      href={external ? external.externalUrl : `/events/${event.id}`}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-    >
+    <a className="market-card" href={`/events/${event.id}`}>
       <div className="market-card-top">
         <span className={`category-icon tone-${category.tone}`}>
           <Icon size={23} aria-hidden="true" />
@@ -77,33 +72,19 @@ function EventCard({ event, now }: { event: EventItem; now: string }) {
           {closed ? "Closed" : "Open"}
         </span>
       </div>
-      <span className="market-category">
-        {event.category} · {external ? "Kalshi ↗" : "Event original"}
-      </span>
+      <span className="market-category">{event.category}</span>
       <h3>{event.title}</h3>
-      {external && external.marketCount > 1 ? (
-        <div className="kalshi-market-count">
-          {external.marketCount} open markets <span>View on Kalshi ↗</span>
-        </div>
-      ) : (
-        <div
-          className="market-outcomes"
-          aria-label={external ? "Indicative ask prices" : "Possible outcomes"}
-        >
-          <span>
-            Yes <span>{external ? cents(external.yesAsk) : "↗"}</span>
-          </span>
-          <span>
-            No <span>{external ? cents(external.noAsk) : "↘"}</span>
-          </span>
-        </div>
-      )}
-      {external && (
-        <small className="kalshi-caption">
-          {external.marketCount === 1 ? "Ask prices · " : ""}External market ·
-          Opens Kalshi
-        </small>
-      )}
+      <div className="market-outcomes" aria-label="Last trade prices">
+        <span>
+          Yes <span>{price == null ? "—" : `${price}¢`}</span>
+        </span>
+        <span>
+          No <span>{price == null ? "—" : `${100 - price}¢`}</span>
+        </span>
+      </div>
+      <small>
+        {price == null ? "Awaiting first trade" : "Last trade · Virtual funds"}
+      </small>
       <div className="market-card-footer">
         <time dateTime={event.closesAt}>
           {closed ? "Closed" : "Closes"}{" "}
@@ -142,20 +123,6 @@ export default async function Home({
   let data: Awaited<ReturnType<typeof listOwnEvents>> | null = null;
   let groups: { category: (typeof categories)[number]; events: EventItem[] }[] =
     [];
-  let kalshiError = false;
-  let kalshiFetchedAt = "";
-  let kalshiEvents: CatalogEvent[] = [];
-  const kalshiRequest =
-    !saved && params.status !== "closed"
-      ? loadKalshiCatalog()
-          .then((result) => {
-            kalshiEvents = result.events;
-            kalshiFetchedAt = result.fetchedAt;
-          })
-          .catch(() => {
-            kalshiError = true;
-          })
-      : Promise.resolve();
   let error = "",
     needsSignIn = false;
   try {
@@ -190,32 +157,18 @@ export default async function Home({
   } catch {
     error = "We couldn’t load these events. Try again or reset your filters.";
   }
-  await kalshiRequest;
-  const page = Number(params.page ?? 0);
-  const filteredKalshi = kalshiEvents.filter(
-    (e) =>
-      (!params.category ||
-        params.category === "all" ||
-        e.category === params.category) &&
-      (!params.q ||
-        e.title.toLowerCase().includes(params.q.trim().toLowerCase())),
-  );
-  const safePage =
-    Number.isInteger(page) && page >= 0 && page <= 10000 ? page : 0;
-  const shownKalshi = filteredKalshi.slice(safePage * 12, (safePage + 1) * 12);
-  const feedEvents: EventItem[] = [...(data?.events ?? []), ...shownKalshi];
-  const more = Boolean(
-    data?.hasMore || filteredKalshi.length > (safePage + 1) * 12,
-  );
-  if (browse)
-    groups = categories.map((category) => ({
-      category,
-      events: [
-        ...(groups.find((g) => g.category.name === category.name)?.events ??
-          []),
-        ...kalshiEvents.filter((e) => e.category === category.name),
-      ].slice(0, 3),
-    }));
+  const feedEvents = data?.events ?? [];
+  const more = Boolean(data?.hasMore);
+  let prices = new Map<string, number>();
+  try {
+    if (env.DB)
+      prices = await readLastPrices(
+        env.DB,
+        [...feedEvents, ...groups.flatMap((g) => g.events)].map((e) => e.id),
+      );
+  } catch {
+    /* The event list remains usable when market data is unavailable. */
+  }
   const now = new Date().toISOString();
   const link = (overrides: Record<string, string>) =>
     "/?" +
@@ -297,13 +250,6 @@ export default async function Home({
             View portfolio <ArrowUpRight size={14} aria-hidden="true" />
           </a>
         </div>
-        {!saved && params.status !== "closed" && (
-          <p className="kalshi-feed-status" role="status">
-            {kalshiError
-              ? "Kalshi unavailable. Try refreshing."
-              : `Kalshi · ${kalshiEvents.length} events · Updated ${kalshiFetchedAt.replace("T", " ").slice(0, 19)} UTC`}
-          </p>
-        )}
         {needsSignIn ? (
           <section className="discover-empty">
             <Bookmark size={28} />
@@ -345,7 +291,12 @@ export default async function Home({
                 {feedEvents.length ? (
                   <div className="market-grid">
                     {feedEvents.map((event) => (
-                      <EventCard key={event.id} event={event} now={now} />
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        now={now}
+                        price={prices.get(event.id)}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -404,7 +355,6 @@ export default async function Home({
                               <h2 id={`heading-${category.name}`}>
                                 {category.name}
                               </h2>
-
                             </div>
                           </div>
                           <a
@@ -421,13 +371,12 @@ export default async function Home({
                                 key={event.id}
                                 event={event}
                                 now={now}
+                                price={prices.get(event.id)}
                               />
                             ))}
                           </div>
                         ) : (
-                          <div className="category-empty">
-                            No events
-                          </div>
+                          <div className="category-empty">No events</div>
                         )}
                       </section>
                     );

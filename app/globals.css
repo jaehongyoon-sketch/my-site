@@ -1418,3 +1418,15 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea { max-width: 
 .browse-title h2 { font-size: 22px; }
 .compact-help { margin: 16px 0; font-size: 13px; color: #617267; }
 .compact-help summary { cursor: pointer; padding: 10px 0; }
+
+.exchange-price {display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;margin:24px 0 8px}
+.exchange-price strong {font-size:42px;letter-spacing:-1.5px}
+.price-up {color:#16734f}.price-down {color:#b43a42}
+.price-chart {width:100%;height:auto;display:block;margin:12px 0}
+.chart-dates {display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#627269;flex-wrap:wrap}
+.exchange-books {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:24px 0}
+.exchange-panel table {width:100%;border-collapse:collapse;text-align:left;font-variant-numeric:tabular-nums}
+.exchange-panel th,.exchange-panel td {padding:9px 4px;border-bottom:1px solid #e5ebe7;font-size:13px}
+.exchange-books button {min-height:44px;padding:8px 16px;border:1px solid #cadfd2;border-radius:8px;background:#edf6f0;color:#145c3d;cursor:pointer}
+.exchange-empty {padding:30px 0;color:#627269}.trade-table {overflow-x:auto}
+#order-entry {scroll-margin-top:90px}

@@ -2,7 +2,7 @@
 import { SellReservations } from "./sell-controls";
 import Positions from "./positions";
 import CancelOrder from "./cancel-order";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { usd } from "@/lib/domain/order";
 import type { practiceAccount } from "@/lib/practice/service";
@@ -12,6 +12,7 @@ export default function PracticePanel() {
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState("");
+  const inFlight = useRef(false);
   async function load(
     page = 0,
     start = false,
@@ -19,6 +20,8 @@ export default function PracticePanel() {
     positionPage = data?.positionPage ?? 0,
     sellPage = data?.sellPage ?? 0,
   ) {
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     setError("");
     try {
@@ -45,12 +48,24 @@ export default function PracticePanel() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to load account.");
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
   useEffect(() => {
     void load();
   }, []);
+  useEffect(() => {
+    const refresh = () => {
+      if (!document.hidden && !inFlight.current) void load(data?.page ?? 0);
+    };
+    const timer = setInterval(refresh, 15000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [data?.page, data?.positionPage, data?.sellPage]);
   return (
     <>
       <div className="event-actions">

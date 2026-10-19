@@ -2,7 +2,6 @@ import OperationsBanner from "@/app/practice/operations-banner";
 import ResolutionPanel from "../resolution-panel";
 import OrderPreviewPanel from "../order-preview";
 import MarketPanel from "../market-panel";
-import { deriveMarketState } from "@/lib/events/market-state";
 import SaveEvent from "../save-event";
 import { env } from "cloudflare:workers";
 import { getOwnEvent } from "@/lib/events/service";
@@ -37,7 +36,7 @@ export default async function EventPage({
         </p>
         <OperationsBanner />
         <ResolutionPanel eventId={event.id} />
-        <MarketPanel initial={deriveMarketState(event)} />
+        <MarketPanel eventId={event.id} />
         <OrderPreviewPanel
           eventId={event.id}
           eventRevision={event.revision}
