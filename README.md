@@ -410,3 +410,4 @@ var ignore = require('ignore/legacy')
 - [@ntwb](https://github.com/ntwb) *Stephen Edgar*
 - [@kasperisager](https://github.com/kasperisager) *Kasper Isager*
 - [@sandersn](https://github.com/sandersn) *Nathan Shively-Sanders*
+Deployment update
