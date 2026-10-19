@@ -1,413 +1,283 @@
-<table><thead>
-  <tr>
-    <th>Linux</th>
-    <th>OS X</th>
-    <th>Windows</th>
-    <th>Coverage</th>
-    <th>Downloads</th>
-  </tr>
-</thead><tbody><tr>
-  <td colspan="2" align="center">
-    <a href="https://github.com/kaelzhang/node-ignore/actions/workflows/nodejs.yml">
-    <img
-      src="https://github.com/kaelzhang/node-ignore/actions/workflows/nodejs.yml/badge.svg"
-      alt="Build Status" /></a>
-  </td>
-  <td align="center">
-    <a href="https://ci.appveyor.com/project/kaelzhang/node-ignore">
-    <img
-      src="https://ci.appveyor.com/api/projects/status/github/kaelzhang/node-ignore?branch=master&svg=true"
-      alt="Windows Build Status" /></a>
-  </td>
-  <td align="center">
-    <a href="https://codecov.io/gh/kaelzhang/node-ignore">
-    <img
-      src="https://codecov.io/gh/kaelzhang/node-ignore/branch/master/graph/badge.svg"
-      alt="Coverage Status" /></a>
-  </td>
-  <td align="center">
-    <a href="https://www.npmjs.org/package/ignore">
-    <img
-      src="http://img.shields.io/npm/dm/ignore.svg"
-      alt="npm module downloads per month" /></a>
-  </td>
-</tr></tbody></table>
+# Event — Prediction Market & Matching Engine
 
-# ignore
+A virtual-funds prediction market for user-created binary events, featuring complementary YES/NO order matching, trade-derived prices, and position valuation.
 
-`ignore` is a manager, filter and parser which implemented in pure JavaScript according to the [.gitignore spec 2.22.1](http://git-scm.com/docs/gitignore).
+**[Live Application](https://every-event.jaehong-yoon.workers.dev)**
 
-`ignore` is used by eslint, gitbook and [many others](https://www.npmjs.com/browse/depended/ignore).
+Built with **TypeScript, React, Cloudflare Workers, and Cloudflare D1**.
 
-Pay **ATTENTION** that [`minimatch`](https://www.npmjs.org/package/minimatch) (which used by `fstream-ignore`) does not follow the gitignore spec.
+## Overview
 
-To filter filenames according to a .gitignore file, I recommend this npm package, `ignore`.
+Event connects the lifecycle of a prediction-market order: submission, fund reservation, matching, execution, and portfolio valuation.
 
-To parse an `.npmignore` file, you should use `minimatch`, because an `.npmignore` file is parsed by npm using `minimatch` and it does not work in the .gitignore way.
+Participants express a view through YES or NO limit orders. Compatible orders from different accounts form matched contracts, and completed trades establish the market’s observed price.
 
-### Tested on
+The system maintains a clear distinction between:
 
-`ignore` is fully tested, and has more than **five hundreds** of unit tests.
+- **Limit price:** the maximum price a participant is willing to pay.
+- **Executable quote:** the price available against an eligible opposing order.
+- **Last-traded price:** the price of the most recent completed trade.
+- **Position value:** holdings valued using the latest observed execution price.
 
-- Linux + Node: `0.8` - `7.x`
-- Windows + Node: `0.10` - `7.x`, node < `0.10` is not tested due to the lack of support of appveyor.
+## Matching Engine
 
-Actually, `ignore` does not rely on any versions of node specially.
+Binary contracts use a complementary pricing relationship:
 
-Since `4.0.0`, ignore will no longer support `node < 6` by default, to use in node < 6, `require('ignore/legacy')`. For details, see [CHANGELOG](https://github.com/kaelzhang/node-ignore/blob/master/CHANGELOG.md).
-
-## Table Of Main Contents
-
-- [Usage](#usage)
-- [`Pathname` Conventions](#pathname-conventions)
-- See Also:
-  - [`glob-gitignore`](https://www.npmjs.com/package/glob-gitignore) matches files using patterns and filters them according to gitignore rules.
-- [Upgrade Guide](#upgrade-guide)
-
-## Install
-
-```sh
-npm i ignore
+```text
+YES execution price + NO execution price = 100¢
 ```
 
-## Usage
+Opposing buy orders become eligible to match when:
 
-```js
-import ignore from 'ignore'
-const ig = ignore().add(['.abc/*', '!.abc/d/'])
+```text
+YES limit price + NO limit price ≥ 100¢
 ```
 
-### Filter the given paths
+The matching process checks account eligibility, event status, order expiry, and available quantity. Orders belonging to the same account cannot match each other.
 
-```js
-const paths = [
-  '.abc/a.js',    // filtered out
-  '.abc/d/e.js'   // included
-]
+Eligible orders are processed by price priority, followed by registration order. The resting order executes at its limit price; the incoming order pays the complementary price.
 
-ig.filter(paths)        // ['.abc/d/e.js']
-ig.ignores('.abc/a.js') // true
+### Execution Example
+
+| Step | Order | Result |
+|---|---|---|
+| 1 | Account A submits YES at 60¢ for 10 contracts | Order rests in the book |
+| 2 | Account B submits NO with a 50¢ limit for 3 contracts | Combined limits satisfy the matching condition |
+| 3 | Three contract pairs execute | A pays 60¢ per YES; B pays 40¢ per NO |
+| 4 | The book updates | A retains 7 unfilled contracts |
+
+Before fees, the matched quantities commit:
+
+```text
+Account A: 3 × $0.60 = $1.80
+Account B: 3 × $0.40 = $1.20
+Total:                  $3.00
 ```
 
-### As the filter function
+Each matched YES/NO pair therefore contributes $1. Partial fills preserve the remaining order quantity.
 
-```js
-paths.filter(ig.createFilter()); // ['.abc/d/e.js']
+**Implementation:** [Matching logic](lib/practice/matching.ts) · [Order processing](lib/practice/service.ts)
+
+## Market Data & Price Formation
+
+Market prices are derived from completed trades. Unfilled orders contribute to available depth without being recorded as executions.
+
+The market interface provides:
+
+- Latest YES execution price and change from the preceding trade.
+- A chart of recent execution prices.
+- Available quantities at executable YES and NO prices.
+- Recent trade history and matched volume.
+- Market updates every five seconds while the page is visible.
+
+A YES purchase quote is derived from the complementary resting NO order, and vice versa:
+
+```text
+Executable YES price = 100¢ − resting NO bid
+Executable NO price  = 100¢ − resting YES bid
 ```
 
-### Win32 paths will be handled
+Matched volume counts each contract pair once. Markets without executions remain explicitly unpriced.
 
-```js
-ig.filter(['.abc\\a.js', '.abc\\d\\e.js'])
-// if the code above runs on windows, the result will be
-// ['.abc\\d\\e.js']
+**Implementation:** [Market data](lib/practice/market.ts) · [Market interface](app/events/market-panel.tsx)
+
+## Accounting & Position Valuation
+
+Monetary calculations use integer units throughout the trading logic:
+
+```text
+1 cent = 400 internal units
+$1     = 40,000 internal units
 ```
 
-## Why another ignore?
+This representation supports exact calculation of the 0.25% trading fee for cent-denominated contract prices, avoiding floating-point rounding in order costs and reservations.
 
-- `ignore` is a standalone module, and is much simpler so that it could easy work with other programs, unlike [isaacs](https://npmjs.org/~isaacs)'s [fstream-ignore](https://npmjs.org/package/fstream-ignore) which must work with the modules of the fstream family.
+For price `p` in cents and quantity `q`:
 
-- `ignore` only contains utility methods to filter paths according to the specified ignore rules, so
-  - `ignore` never try to find out ignore rules by traversing directories or fetching from git configurations.
-  - `ignore` don't cares about sub-modules of git projects.
-
-- Exactly according to [gitignore man page](http://git-scm.com/docs/gitignore), fixes some known matching issues of fstream-ignore, such as:
-  - '`/*.js`' should only match '`a.js`', but not '`abc/a.js`'.
-  - '`**/foo`' should match '`foo`' anywhere.
-  - Prevent re-including a file if a parent directory of that file is excluded.
-  - Handle trailing whitespaces:
-    - `'a '`(one space) should not match `'a  '`(two spaces).
-    - `'a \ '` matches `'a  '`
-  - All test cases are verified with the result of `git check-ignore`.
-
-# Methods
-
-## .add(pattern: string | Ignore): this
-## .add(patterns: Array<string | Ignore>): this
-
-- **pattern** `String | Ignore` An ignore pattern string, or the `Ignore` instance
-- **patterns** `Array<String | Ignore>` Array of ignore patterns.
-
-Adds a rule or several rules to the current manager.
-
-Returns `this`
-
-Notice that a line starting with `'#'`(hash) is treated as a comment. Put a backslash (`'\'`) in front of the first hash for patterns that begin with a hash, if you want to ignore a file with a hash at the beginning of the filename.
-
-```js
-ignore().add('#abc').ignores('#abc')    // false
-ignore().add('\\#abc').ignores('#abc')   // true
+```text
+Principal = p × q × 400 internal units
+Fee       = p × q internal units
+Reserve   = Principal + Fee
 ```
 
-`pattern` could either be a line of ignore pattern or a string of multiple ignore patterns, which means we could just `ignore().add()` the content of a ignore file:
+Accounts receive a one-time allocation of $1,000 in virtual funds. Order processing tracks reserved funds, executed costs, and remaining quantities.
 
-```js
-ignore()
-.add(fs.readFileSync(filenameOfGitignore).toString())
-.filter(filenames)
+Positions use the latest execution price for the corresponding outcome:
+
+```text
+Marked position value = Quantity × Latest outcome price
+Unrealized P&L        = Marked position value − Fee-inclusive acquisition cost
 ```
 
-`pattern` could also be an `ignore` instance, so that we could easily inherit the rules of another `Ignore` instance.
+The portfolio separates trade-derived valuation from positions that do not yet have an observed market price.
 
-## <strike>.addIgnoreFile(path)</strike>
+**Implementation:** [Monetary arithmetic](lib/practice/money.ts) · [Position valuation](lib/practice/positions.ts)
 
-REMOVED in `3.x` for now.
+## Transaction Integrity
 
-To upgrade `ignore@2.x` up to `3.x`, use
+Order processing combines validation, guarded database updates, and atomic batches to keep order state and account balances consistent.
 
-```js
-import fs from 'fs'
+The implementation addresses:
 
-if (fs.existsSync(filename)) {
-  ignore().add(fs.readFileSync(filename).toString())
-}
+- Partial fills and remaining executable quantities.
+- Prevention of self-matching.
+- Expired orders and changes to event eligibility.
+- Paused markets and restricted accounts.
+- Revision checks during state changes.
+- Consistent accounting when a database operation fails.
+
+These checks connect the market’s economic rules to its persisted state: a displayed trade must correspond to a recorded execution and its associated accounting entries.
+
+## Verification
+
+The recorded local validation run completed **210 passing tests** across the project.
+
+Market-specific tests cover:
+
+| Area | Verified behavior |
+|---|---|
+| Price formation | Prices originate from recorded executions |
+| Complementary contracts | YES and NO execution prices sum to 100¢ |
+| Empty markets | No artificial last-traded price |
+| Order depth | Remaining quantities reflect partial fills |
+| Trade history | Executions appear in chronological order |
+| Volume | Each matched pair is counted once |
+| Position valuation | Acquisition costs include fees |
+| Eligibility | Self-matching, expiry, pauses, and restrictions are checked |
+| Failure handling | Failed operations preserve accounting consistency |
+
+Validation commands:
+
+```bash
+# Project test suite
+node --experimental-strip-types --test tests/*.test.mjs
+
+# Type checking
+npx tsc --noEmit
+
+# Application build
+npm run build
+
+# Cloudflare production build
+EVENT_CLOUDFLARE_BUILD=1 npm run build
 ```
 
-instead.
+**Tests:** [Market pricing and valuation](tests/market-prices.test.mjs) · [Full test directory](tests/)
 
-## .filter(paths: Array&lt;Pathname&gt;): Array&lt;Pathname&gt;
+## Architecture
 
-```ts
-type Pathname = string
+```text
+React Interface
+      │
+      ▼
+Cloudflare Workers
+      │
+      ├── Google OAuth & account access
+      ├── User-created event management
+      ├── Order validation & fund reservation
+      ├── Complementary order matching
+      └── Market data & position valuation
+                    │
+                    ▼
+              Cloudflare D1
 ```
 
-Filters the given array of pathnames, and returns the filtered array.
+| Component | Responsibility |
+|---|---|
+| TypeScript / React | Event pages, order entry, market display, and portfolio |
+| Cloudflare Workers | Application requests and trading logic |
+| Cloudflare D1 | Persistent accounts, events, orders, and executions |
+| Google OAuth | Authentication |
+| SQL migrations | Database schema management |
 
-- **paths** `Array.<Pathname>` The array of `pathname`s to be filtered.
+## Administrator Access & Market Operations
 
-### `Pathname` Conventions:
+Administrator access is tied to an active application account through the server-side `ADMIN_ACCOUNT_ID` setting. Administrative pages and API endpoints verify the authenticated account before permitting privileged operations.
 
-#### 1. `Pathname` should be a `path.relative()`d pathname
+The administration interface provides:
 
-`Pathname` should be a string that have been `path.join()`ed, or the return value of `path.relative()` to the current directory,
+| Area | Functionality |
+|---|---|
+| Event management | Create and edit drafts, publish events, archive published events, and delete eligible drafts |
+| Account oversight | View registered profiles, account status, roles, and unexpired session counts |
+| Trading eligibility | Manage account trading restrictions |
+| Market operations | Pause or resume practice trading |
+| Outcome review | Review event outcomes |
+| Audit history | Inspect recorded administrative actions |
 
-```js
-// WRONG, an error will be thrown
-ig.ignores('./abc')
+Published event questions and rules are locked to preserve the terms under which participants placed orders. Event updates use revision checks to detect conflicting changes, while administrative mutations record audit entries.
 
-// WRONG, for it will never happen, and an error will be thrown
-// If the gitignore rule locates at the root directory,
-// `'/abc'` should be changed to `'abc'`.
-// ```
-// path.relative('/', '/abc')  -> 'abc'
-// ```
-ig.ignores('/abc')
+Authorization is enforced on the server. Navigation adapts to the account’s permissions, providing administrators with event, member, and operational controls.
 
-// WRONG, that it is an absolute path on Windows, an error will be thrown
-ig.ignores('C:\\abc')
+**Implementation:** [Account authorization](lib/accounts/access.ts) · [Event administration](lib/events/service.ts) · [Administrative API](app/api/admin/events/route.ts) · [Operations interface](app/admin/operations/panel.tsx)
 
-// Right
-ig.ignores('abc')
+## Trading Interface & Domain Types
 
-// Right
-ig.ignores(path.join('./abc'))  // path.join('./abc') -> 'abc'
+The application separates presentation, domain definitions, and persistent trading operations.
+
+```text
+UI Components
+    │  User input and market display
+    ▼
+API Validation & Authorization
+    │  Validated requests
+    ▼
+Domain & Trading Services
+    │  Matching rules and accounting operations
+    ▼
+Database
 ```
 
-In other words, each `Pathname` here should be a relative path to the directory of the gitignore rules.
+### Trading Interface
 
-Suppose the dir structure is:
+The interface connects event discovery, order entry, market data, and portfolio monitoring:
 
-```
-/path/to/your/repo
-    |-- a
-    |   |-- a.js
-    |
-    |-- .b
-    |
-    |-- .c
-         |-- .DS_store
-```
+- **Explore and Saved:** browse published events and maintain a watchlist.
+- **Market view:** inspect execution history, price changes, and available order depth.
+- **Order entry:** select an executable price and review quantity and estimated costs.
+- **Portfolio:** monitor holdings, acquisition costs, and trade-based valuations.
+- **Account-aware navigation:** display sign-in status and authorized administrative controls.
 
-Then the `paths` might be like this:
+Desktop navigation and mobile bottom navigation provide access to the same primary workflows. Navigation includes active-page indicators, and the application provides a skip link to the main content.
 
-```js
-[
-  'a/a.js'
-  '.b',
-  '.c/.DS_store'
-]
-```
+### Domain Types & Runtime Validation
 
-#### 2. filenames and dirnames
+TypeScript definitions represent outcomes, quote requests, order estimates, and lifecycle states. Literal unions make distinctions such as YES versus NO and draft versus published events explicit in the code.
 
-`node-ignore` does NO `fs.stat` during path matching, so for the example below:
+Runtime schemas validate incoming data at application boundaries, including:
 
-```js
-// First, we add a ignore pattern to ignore a directory
-ig.add('config/')
+- Allowed outcome and event-status values.
+- Integer quantities and price ranges.
+- Required event titles, rules, source URLs, and closing dates.
+- Revision numbers used to detect stale updates.
 
-// `ig` does NOT know if 'config', in the real world,
-//   is a normal file, directory or something.
+Static types describe the data expected by application code; runtime validation checks the data actually received. Trading services then enforce account eligibility, matching conditions, and monetary calculations.
 
-ig.ignores('config')
-// `ig` treats `config` as a file, so it returns `false`
+**Implementation:** [Domain types](lib/domain/types.ts) · [Lifecycle definitions](lib/domain/lifecycle.ts) · [Validation schemas](lib/domain/validation.ts) · [Event schemas and rules](lib/events/service.ts) · [Application navigation](components/app-navigation.tsx)
 
-ig.ignores('config/')
-// returns `true`
-```
+## Quantitative Concepts
 
-Specially for people who develop some library based on `node-ignore`, it is important to understand that.
+The implementation makes several market concepts directly observable:
 
-Usually, you could use [`glob`](http://npmjs.org/package/glob) with `option.mark = true` to fetch the structure of the current directory:
+**Order flow and price formation.** Submitted orders create potential liquidity; completed executions establish observed prices.
 
-```js
-import glob from 'glob'
+**Limit constraints and execution quality.** An incoming order can execute below its maximum acceptable price when the opposing resting order permits it.
 
-glob('**', {
-  // Adds a / character to directory matches.
-  mark: true
-}, (err, files) => {
-  if (err) {
-    return console.error(err)
-  }
+**Liquidity and partial execution.** Available opposing quantity determines how much of an order can fill immediately.
 
-  let filtered = ignore().add(patterns).filter(files)
-  console.log(filtered)
-})
-```
+**Accounting consistency.** Contract prices, fees, reservations, and position costs share a discrete monetary representation.
 
-## .ignores(pathname: Pathname): boolean
+**Trade-based valuation.** Portfolio marks are calculated from execution records and linked to the cost of acquiring each position.
 
-> new in 3.2.0
+## Code Guide
 
-Returns `Boolean` whether `pathname` should be ignored.
-
-```js
-ig.ignores('.abc/a.js')    // true
-```
-
-## .createFilter()
-
-Creates a filter function which could filter an array of paths with `Array.prototype.filter`.
-
-Returns `function(path)` the filter function.
-
-## .test(pathname: Pathname) since 5.0.0
-
-Returns `TestResult`
-
-```ts
-interface TestResult {
-  ignored: boolean
-  // true if the `pathname` is finally unignored by some negative pattern
-  unignored: boolean
-}
-```
-
-- `{ignored: true, unignored: false}`: the `pathname` is ignored
-- `{ignored: false, unignored: true}`: the `pathname` is unignored
-- `{ignored: false, unignored: false}`: the `pathname` is never matched by any ignore rules.
-
-## static `ignore.isPathValid(pathname): boolean` since 5.0.0
-
-Check whether the `pathname` is an valid `path.relative()`d path according to the [convention](#1-pathname-should-be-a-pathrelatived-pathname).
-
-This method is **NOT** used to check if an ignore pattern is valid.
-
-```js
-ignore.isPathValid('./foo')  // false
-```
-
-## ignore(options)
-
-### `options.ignorecase` since 4.0.0
-
-Similar as the `core.ignorecase` option of [git-config](https://git-scm.com/docs/git-config), `node-ignore` will be case insensitive if `options.ignorecase` is set to `true` (the default value), otherwise case sensitive.
-
-```js
-const ig = ignore({
-  ignorecase: false
-})
-
-ig.add('*.png')
-
-ig.ignores('*.PNG')  // false
-```
-
-### `options.ignoreCase?: boolean` since 5.2.0
-
-Which is alternative to `options.ignoreCase`
-
-### `options.allowRelativePaths?: boolean` since 5.2.0
-
-This option brings backward compatibility with projects which based on `ignore@4.x`. If `options.allowRelativePaths` is `true`, `ignore` will not check whether the given path to be tested is [`path.relative()`d](#pathname-conventions).
-
-However, passing a relative path, such as `'./foo'` or `'../foo'`, to test if it is ignored or not is not a good practise, which might lead to unexpected behavior
-
-```js
-ignore({
-  allowRelativePaths: true
-}).ignores('../foo/bar.js') // And it will not throw
-```
-
-****
-
-# Upgrade Guide
-
-## Upgrade 4.x -> 5.x
-
-Since `5.0.0`, if an invalid `Pathname` passed into `ig.ignores()`, an error will be thrown, unless `options.allowRelative = true` is passed to the `Ignore` factory.
-
-While `ignore < 5.0.0` did not make sure what the return value was, as well as
-
-```ts
-.ignores(pathname: Pathname): boolean
-
-.filter(pathnames: Array<Pathname>): Array<Pathname>
-
-.createFilter(): (pathname: Pathname) => boolean
-
-.test(pathname: Pathname): {ignored: boolean, unignored: boolean}
-```
-
-See the convention [here](#1-pathname-should-be-a-pathrelatived-pathname) for details.
-
-If there are invalid pathnames, the conversion and filtration should be done by users.
-
-```js
-import {isPathValid} from 'ignore' // introduced in 5.0.0
-
-const paths = [
-  // invalid
-  //////////////////
-  '',
-  false,
-  '../foo',
-  '.',
-  //////////////////
-
-  // valid
-  'foo'
-]
-.filter(isValidPath)
-
-ig.filter(paths)
-```
-
-## Upgrade 3.x -> 4.x
-
-Since `4.0.0`, `ignore` will no longer support node < 6, to use `ignore` in node < 6:
-
-```js
-var ignore = require('ignore/legacy')
-```
-
-## Upgrade 2.x -> 3.x
-
-- All `options` of 2.x are unnecessary and removed, so just remove them.
-- `ignore()` instance is no longer an [`EventEmitter`](nodejs.org/api/events.html), and all events are unnecessary and removed.
-- `.addIgnoreFile()` is removed, see the [.addIgnoreFile](#addignorefilepath) section for details.
-
-****
-
-# Collaborators
-
-- [@whitecolor](https://github.com/whitecolor) *Alex*
-- [@SamyPesse](https://github.com/SamyPesse) *Samy Pessé*
-- [@azproduction](https://github.com/azproduction) *Mikhail Davydov*
-- [@TrySound](https://github.com/TrySound) *Bogdan Chadkin*
-- [@JanMattner](https://github.com/JanMattner) *Jan Mattner*
-- [@ntwb](https://github.com/ntwb) *Stephen Edgar*
-- [@kasperisager](https://github.com/kasperisager) *Kasper Isager*
-- [@sandersn](https://github.com/sandersn) *Nathan Shively-Sanders*
-Deployment update
+| File | Purpose |
+|---|---|
+| [`lib/practice/matching.ts`](lib/practice/matching.ts) | Matching rules and execution selection |
+| [`lib/practice/service.ts`](lib/practice/service.ts) | Order processing and account updates |
+| [`lib/practice/money.ts`](lib/practice/money.ts) | Integer monetary calculations |
+| [`lib/practice/market.ts`](lib/practice/market.ts) | Trade prices, market depth, and volume |
+| [`lib/practice/positions.ts`](lib/practice/positions.ts) | Holdings, cost basis, and valuation |
+| [`app/events/market-panel.tsx`](app/events/market-panel.tsx) | Market visualization and quote interaction |
+| [`tests/market-prices.test.mjs`](tests/market-prices.test.mjs) | Pricing and valuation verification |
+| [`drizzle/`](drizzle/) | Database migrations |
