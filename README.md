@@ -6,6 +6,22 @@ A virtual-funds prediction market for user-created binary events, featuring comp
 
 Built with **TypeScript, React, Cloudflare Workers, and Cloudflare D1**.
 
+Trading Demo
+
+A walkthrough of the virtual-funds trading workflow using two accounts:
+
+Submit a limit order.
+
+Execute a partial fill against an opposing order.
+
+Cancel the remaining unfilled quantity.
+
+Review the updated order status, retained position, and released reservation.
+
+The demonstration shows how order execution and cancellation affect the market interface and account state.
+
+https://studio.youtube.com/video/yHVU8Il0_k4/edit
+
 ## Overview
 
 Event connects the lifecycle of a prediction-market order: submission, fund reservation, matching, execution, and portfolio valuation.
