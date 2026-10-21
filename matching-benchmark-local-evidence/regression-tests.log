@@ -1,0 +1,32 @@
+✔ YES+NO fills cost exactly $1, per-contract sub-cent fee, price improvement and partial remainder (7.05875ms)
+✔ maker best price wins; equal prices use acceptance order (8.241875ms)
+✔ uncrossed orders and self trades remain unfilled (4.2175ms)
+✔ concurrent takers and matching retries never overfill a maker (4.254333ms)
+✔ a failed settlement rolls back both sides (3.573416ms)
+✔ partial expiry releases only remaining reservation and keeps fills and paid fees (5.262416ms)
+✔ every allowed price uses exact integer fee units independent of fill splitting (0.521417ms)
+✔ Day 10 upgrade preserves open order, reservation and original fee agreement (3.386917ms)
+✔ smallest per-contract fee remains nonzero and exact (3.583417ms)
+✔ bounded matching can continue safely across multiple requests (5.728125ms)
+✔ matching transaction rechecks event visibility after candidate read (4.476958ms)
+✔ cancel open order returns all held funds once and retains an immutable receipt (6.151167ms)
+✔ partial cancellation preserves filled cost, fee and fills, releases only remainder (4.094542ms)
+✔ filled and expired orders are not reported as cancelled (6.875333ms)
+✔ ownership, inactive account and forged cancellation input are rejected (3.15525ms)
+✔ cancellation wins after matcher reads candidate: no stale fill commits (3.433708ms)
+✔ fill wins before cancellation transaction: refund uses new remaining quantity (3.44875ms)
+✔ failed cancellation ledger write rolls back cancellation marker and cash; retry succeeds (3.022125ms)
+✔ cancelled order submission retry cannot reopen or reserve it again (3.077542ms)
+✔ empty and resting orders do not invent a price; cancellation removes depth (5.487375ms)
+✔ YES and NO maker fills yield complementary prices, stable ordering, and counted-once volume (5.035917ms)
+✔ partial fills publish only executed quantity and retain remaining depth (3.22475ms)
+✔ self orders do not generate prices; paused, expired and restricted orders do not advertise executable depth (3.770958ms)
+✔ failed atomic match never creates a chart tick or valuation (3.377292ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.663083

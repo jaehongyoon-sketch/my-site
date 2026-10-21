@@ -1,0 +1,2361 @@
+{
+  "generatedAt": "2026-10-21T18:49:34.018Z",
+  "mode": "baseline",
+  "commit": "c77840a5515b5d66cb2ed229dd792dd19c0264d1",
+  "benchmarkSha256": "08f24cde91b4c3270c88a1346dc0381a29a3d8393af6138da87c26d9abd7f7ba",
+  "environment": {
+    "node": "v24.19.0",
+    "sqlite": "3.53.3",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "logicalCpus": 10
+  },
+  "methodology": {
+    "warmups": 5,
+    "repeats": 30,
+    "sizes": [
+      10,
+      100,
+      1000
+    ],
+    "database": "node:sqlite in-memory via existing test adapter",
+    "state": "logical state restored including rowids before each iteration; warm caches; sequential",
+    "timing": "service calls only; excludes setup, state restoration, input construction and postcondition assertions; includes continuation account reads",
+    "multiFill": "8 eligible makers held constant across book sizes; not a full-book sweep",
+    "p95": "nearest-rank; exploratory with 30 samples; no HTTP, network, D1 or concurrency"
+  },
+  "cases": [
+    {
+      "scenario": "no-match",
+      "restingOrders": 10,
+      "eligibleMakers": 0,
+      "samples": [
+        {
+          "initialMs": 0.24349999999999739,
+          "completionMs": 0.2437089999999955,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.23700000000000188,
+          "completionMs": 0.23712499999999892,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.22966699999999918,
+          "completionMs": 0.22979199999999622,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.37741599999999664,
+          "completionMs": 0.3777499999999989,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4409169999999989,
+          "completionMs": 0.4412500000000037,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.31354100000000074,
+          "completionMs": 0.3137079999999983,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.2752089999999967,
+          "completionMs": 0.27533400000000086,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.25208299999999895,
+          "completionMs": 0.2522080000000031,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24320800000000276,
+          "completionMs": 0.2433329999999998,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24645800000000406,
+          "completionMs": 0.2465830000000011,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.2426669999999973,
+          "completionMs": 0.242834000000002,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.25941600000000165,
+          "completionMs": 0.25958300000000634,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24175000000000324,
+          "completionMs": 0.24191700000000083,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.2445419999999956,
+          "completionMs": 0.2447080000000028,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24383299999999508,
+          "completionMs": 0.24395800000000634,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.2666250000000048,
+          "completionMs": 0.26679199999999526,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.34199999999999875,
+          "completionMs": 0.34216700000000344,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.28745899999999835,
+          "completionMs": 0.28787499999999966,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.27241700000000435,
+          "completionMs": 0.27249999999999375,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.27916700000000105,
+          "completionMs": 0.27925000000000466,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24741699999999867,
+          "completionMs": 0.24750000000000227,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24662499999999454,
+          "completionMs": 0.24670799999999815,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24004200000000253,
+          "completionMs": 0.24012499999999193,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24008399999999597,
+          "completionMs": 0.24016699999999958,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.23758399999999824,
+          "completionMs": 0.2376249999999942,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.2562500000000085,
+          "completionMs": 0.2563340000000096,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.258624999999995,
+          "completionMs": 0.25866700000000264,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.23629099999999426,
+          "completionMs": 0.2363330000000019,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.42070799999999053,
+          "completionMs": 0.4208330000000018,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.31520900000001006,
+          "completionMs": 0.3153340000000071,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.2497499999999988,
+        "p95": 0.42070799999999053,
+        "min": 0.22966699999999918,
+        "max": 0.4409169999999989
+      },
+      "completionMs": {
+        "median": 0.24985400000000269,
+        "p95": 0.4208330000000018,
+        "min": 0.22979199999999622,
+        "max": 0.4412500000000037
+      }
+    },
+    {
+      "scenario": "single-fill",
+      "restingOrders": 10,
+      "eligibleMakers": 1,
+      "samples": [
+        {
+          "initialMs": 0.39350000000000307,
+          "completionMs": 0.39358400000000415,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.397207999999992,
+          "completionMs": 0.3972909999999956,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.3942089999999894,
+          "completionMs": 0.39424999999999955,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5369170000000025,
+          "completionMs": 0.5370840000000072,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5196660000000008,
+          "completionMs": 0.5197909999999979,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5685840000000013,
+          "completionMs": 0.5687499999999943,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.44087500000000546,
+          "completionMs": 0.44095900000000654,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.41866600000000176,
+          "completionMs": 0.4187909999999988,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4053339999999963,
+          "completionMs": 0.4054169999999999,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4007079999999945,
+          "completionMs": 0.4007909999999981,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4038749999999993,
+          "completionMs": 0.4039590000000004,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.40441599999999767,
+          "completionMs": 0.40449999999999875,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4136660000000063,
+          "completionMs": 0.4137500000000074,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4135840000000002,
+          "completionMs": 0.4136670000000038,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4261250000000132,
+          "completionMs": 0.42629200000000367,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4793339999999944,
+          "completionMs": 0.4794589999999914,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.43625000000000114,
+          "completionMs": 0.4363340000000022,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4047920000000005,
+          "completionMs": 0.4048750000000041,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.42549999999999955,
+          "completionMs": 0.42558300000000315,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.3939579999999978,
+          "completionMs": 0.3940419999999989,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.41254200000000196,
+          "completionMs": 0.4125839999999954,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.386958000000007,
+          "completionMs": 0.3870420000000081,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.3866660000000053,
+          "completionMs": 0.38675000000000637,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4159580000000034,
+          "completionMs": 0.4159999999999968,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.39041699999999935,
+          "completionMs": 0.3904579999999953,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.3932919999999882,
+          "completionMs": 0.39333399999999585,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4013750000000016,
+          "completionMs": 0.4014580000000052,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4689589999999981,
+          "completionMs": 0.46912500000000534,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4263750000000073,
+          "completionMs": 0.4264580000000109,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.41320799999999736,
+          "completionMs": 0.41329100000000096,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.41287499999999966,
+        "p95": 0.5369170000000025,
+        "min": 0.3866660000000053,
+        "max": 0.5685840000000013
+      },
+      "completionMs": {
+        "median": 0.4129374999999982,
+        "p95": 0.5370840000000072,
+        "min": 0.38675000000000637,
+        "max": 0.5687499999999943
+      }
+    },
+    {
+      "scenario": "eight-fills",
+      "restingOrders": 10,
+      "eligibleMakers": 8,
+      "samples": [
+        {
+          "initialMs": 0.8554579999999987,
+          "completionMs": 1.7590409999999963,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8384170000000211,
+          "completionMs": 1.7720000000000198,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8387500000000045,
+          "completionMs": 1.7232079999999996,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8259580000000142,
+          "completionMs": 1.7317500000000052,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8318749999999966,
+          "completionMs": 1.7923749999999927,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.854959000000008,
+          "completionMs": 1.7829590000000053,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8709170000000199,
+          "completionMs": 1.811916999999994,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8850419999999986,
+          "completionMs": 1.8142919999999947,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8744999999999834,
+          "completionMs": 1.7997499999999889,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9034170000000188,
+          "completionMs": 1.8308330000000126,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.867083000000008,
+          "completionMs": 1.8051250000000039,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8610419999999976,
+          "completionMs": 3.0179170000000113,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8662089999999978,
+          "completionMs": 1.7934999999999945,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8392499999999927,
+          "completionMs": 1.7393749999999955,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.906708000000009,
+          "completionMs": 1.8256660000000124,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8283329999999864,
+          "completionMs": 1.7225410000000068,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9220829999999864,
+          "completionMs": 1.914666000000011,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8580830000000219,
+          "completionMs": 1.8269160000000113,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8477080000000115,
+          "completionMs": 1.7745000000000175,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9364590000000135,
+          "completionMs": 1.9361670000000117,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8947080000000085,
+          "completionMs": 1.8086250000000064,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8489170000000001,
+          "completionMs": 1.7536249999999995,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8627079999999978,
+          "completionMs": 1.8126660000000072,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8685839999999985,
+          "completionMs": 1.771125000000012,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8350419999999872,
+          "completionMs": 1.8387089999999944,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8792499999999848,
+          "completionMs": 1.8195419999999842,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8364169999999831,
+          "completionMs": 1.7648329999999817,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8236249999999927,
+          "completionMs": 1.884666999999979,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9118749999999807,
+          "completionMs": 1.8486249999999984,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.8445000000000107,
+          "completionMs": 1.7401670000000138,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.8595625000000098,
+        "p95": 0.9220829999999864,
+        "min": 0.8236249999999927,
+        "max": 0.9364590000000135
+      },
+      "completionMs": {
+        "median": 1.8024374999999964,
+        "p95": 1.9361670000000117,
+        "min": 1.7225410000000068,
+        "max": 3.0179170000000113
+      }
+    },
+    {
+      "scenario": "no-match",
+      "restingOrders": 100,
+      "eligibleMakers": 0,
+      "samples": [
+        {
+          "initialMs": 0.5945830000000001,
+          "completionMs": 0.594666999999987,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5973749999999995,
+          "completionMs": 0.5974160000000097,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5909580000000005,
+          "completionMs": 0.5910420000000158,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5939580000000149,
+          "completionMs": 0.5940000000000225,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.588957999999991,
+          "completionMs": 0.5889999999999986,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5922919999999863,
+          "completionMs": 0.5923339999999939,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5920839999999998,
+          "completionMs": 0.59212500000001,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.60775000000001,
+          "completionMs": 0.6077920000000177,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5948329999999942,
+          "completionMs": 0.5948750000000018,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6229999999999905,
+          "completionMs": 0.6231250000000159,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6081249999999727,
+          "completionMs": 0.6082079999999905,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6129579999999919,
+          "completionMs": 0.6129999999999995,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.619542000000024,
+          "completionMs": 0.6195829999999773,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5993750000000091,
+          "completionMs": 0.5994169999999599,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.59050000000002,
+          "completionMs": 0.5905420000000277,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5836249999999836,
+          "completionMs": 0.5837499999999523,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5760829999999828,
+          "completionMs": 0.5761249999999905,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5711250000000518,
+          "completionMs": 0.5711670000000026,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5717500000000086,
+          "completionMs": 0.5718329999999696,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5757080000000201,
+          "completionMs": 0.5757910000000379,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5666249999999877,
+          "completionMs": 0.5666669999999954,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6132920000000013,
+          "completionMs": 0.6133340000000089,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5852080000000228,
+          "completionMs": 0.5852919999999813,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5785000000000196,
+          "completionMs": 0.5785410000000297,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5772499999999923,
+          "completionMs": 0.5773330000000101,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6759580000000369,
+          "completionMs": 0.6760830000000055,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6175000000000068,
+          "completionMs": 0.6306660000000193,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5924589999999625,
+          "completionMs": 0.5925419999999804,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5884590000000003,
+          "completionMs": 0.5885420000000181,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.5790829999999687,
+          "completionMs": 0.5791249999999764,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.592187999999993,
+        "p95": 0.6229999999999905,
+        "min": 0.5666249999999877,
+        "max": 0.6759580000000369
+      },
+      "completionMs": {
+        "median": 0.592229500000002,
+        "p95": 0.6306660000000193,
+        "min": 0.5666669999999954,
+        "max": 0.6760830000000055
+      }
+    },
+    {
+      "scenario": "single-fill",
+      "restingOrders": 100,
+      "eligibleMakers": 1,
+      "samples": [
+        {
+          "initialMs": 1.541499999999985,
+          "completionMs": 1.5415840000000003,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5517920000000345,
+          "completionMs": 1.551917000000003,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5485830000000078,
+          "completionMs": 1.548667000000023,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4931250000000205,
+          "completionMs": 1.4931659999999738,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4796249999999986,
+          "completionMs": 1.4797080000000165,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4966249999999945,
+          "completionMs": 1.4967080000000124,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4892090000000167,
+          "completionMs": 1.4892500000000268,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5037499999999682,
+          "completionMs": 1.5038339999999835,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5023330000000215,
+          "completionMs": 1.5024170000000368,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4537090000000035,
+          "completionMs": 1.4537920000000213,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4737499999999955,
+          "completionMs": 1.4737910000000056,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4540000000000077,
+          "completionMs": 1.4540420000000154,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4514580000000024,
+          "completionMs": 1.4515420000000177,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4914590000000203,
+          "completionMs": 1.4915420000000381,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4413749999999936,
+          "completionMs": 1.4414579999999546,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4487500000000182,
+          "completionMs": 1.4488339999999766,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4982090000000312,
+          "completionMs": 1.498292000000049,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4607090000000085,
+          "completionMs": 1.4607919999999694,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.479582999999991,
+          "completionMs": 1.4796660000000088,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.508874999999989,
+          "completionMs": 1.508958000000007,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4626670000000104,
+          "completionMs": 1.4627499999999714,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.502375000000029,
+          "completionMs": 1.5025830000000155,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5002910000000043,
+          "completionMs": 1.5003749999999627,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5148340000000076,
+          "completionMs": 1.5149589999999762,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4462500000000205,
+          "completionMs": 1.446292000000028,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4847909999999729,
+          "completionMs": 1.4848749999999882,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4666659999999752,
+          "completionMs": 1.4667499999999905,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4697910000000434,
+          "completionMs": 1.4698750000000018,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.5203750000000014,
+          "completionMs": 1.5204590000000167,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4784999999999968,
+          "completionMs": 1.478541000000007,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 1.4869999999999948,
+        "p95": 1.5485830000000078,
+        "min": 1.4413749999999936,
+        "max": 1.5517920000000345
+      },
+      "completionMs": {
+        "median": 1.4870625000000075,
+        "p95": 1.548667000000023,
+        "min": 1.4414579999999546,
+        "max": 1.551917000000003
+      }
+    },
+    {
+      "scenario": "eight-fills",
+      "restingOrders": 100,
+      "eligibleMakers": 8,
+      "samples": [
+        {
+          "initialMs": 3.7777079999999614,
+          "completionMs": 7.517333000000008,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.90358399999991,
+          "completionMs": 7.6768749999999955,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.807209000000057,
+          "completionMs": 7.639542000000006,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.9401670000000877,
+          "completionMs": 7.654584,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7712499999998954,
+          "completionMs": 7.589416999999912,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.8779579999999214,
+          "completionMs": 7.666540999999938,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.8792909999999665,
+          "completionMs": 7.582583,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.822499999999991,
+          "completionMs": 7.5518749999999955,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7031670000000076,
+          "completionMs": 7.373083000000065,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.74579099999994,
+          "completionMs": 7.427915999999982,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.8126250000000255,
+          "completionMs": 7.623624999999947,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.767791999999986,
+          "completionMs": 7.524167000000034,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.6134170000000267,
+          "completionMs": 7.289959000000067,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.6615000000000464,
+          "completionMs": 8.04950000000008,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.6939590000000635,
+          "completionMs": 7.305124999999975,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.730458999999996,
+          "completionMs": 7.42879199999993,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.76887499999998,
+          "completionMs": 7.619292000000087,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.822375000000079,
+          "completionMs": 7.657832999999982,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.6743329999999332,
+          "completionMs": 7.430374999999913,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.758625000000052,
+          "completionMs": 7.497333000000026,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.6443329999999605,
+          "completionMs": 8.028542000000016,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7525419999999485,
+          "completionMs": 7.504707999999937,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.8031250000000227,
+          "completionMs": 7.511999999999944,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.799250000000029,
+          "completionMs": 7.466167000000041,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7443339999999807,
+          "completionMs": 7.4672500000000355,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.755333999999948,
+          "completionMs": 7.5499999999999545,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.8606659999999238,
+          "completionMs": 7.64391599999999,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.649249999999938,
+          "completionMs": 7.981999999999971,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.782375000000002,
+          "completionMs": 7.437708000000043,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7184579999999414,
+          "completionMs": 7.443791999999917,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 3.768333499999983,
+        "p95": 3.90358399999991,
+        "min": 3.6134170000000267,
+        "max": 3.9401670000000877
+      },
+      "completionMs": {
+        "median": 7.537083499999994,
+        "p95": 8.028542000000016,
+        "min": 7.289959000000067,
+        "max": 8.04950000000008
+      }
+    },
+    {
+      "scenario": "no-match",
+      "restingOrders": 1000,
+      "eligibleMakers": 0,
+      "samples": [
+        {
+          "initialMs": 32.40274999999929,
+          "completionMs": 32.40287499999977,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.68774999999914,
+          "completionMs": 32.687833999998475,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.280791999999565,
+          "completionMs": 33.281042000000525,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.33483399999932,
+          "completionMs": 33.33508400000028,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.937041999999565,
+          "completionMs": 32.93725000000086,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.26520799999889,
+          "completionMs": 33.26545799999985,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.346041999999215,
+          "completionMs": 33.346292000000176,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.856957999998485,
+          "completionMs": 32.857082999998966,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.13316699999996,
+          "completionMs": 32.13337499999943,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.258458000000246,
+          "completionMs": 33.258583000000726,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.230458,
+          "completionMs": 33.230625000000146,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.880292000001646,
+          "completionMs": 32.88045899999997,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.433375000000524,
+          "completionMs": 32.433624999999665,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.8443329999991,
+          "completionMs": 32.84437499999876,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.34445799999958,
+          "completionMs": 33.34458300000006,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.634249999999156,
+          "completionMs": 32.634374999999636,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.693459000000075,
+          "completionMs": 32.693584000000556,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.74920799999927,
+          "completionMs": 32.74933299999975,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.79620799999975,
+          "completionMs": 32.796416999999565,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.15899999999965,
+          "completionMs": 33.159208000000945,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.560459000000264,
+          "completionMs": 32.56066699999974,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.03266700000131,
+          "completionMs": 33.03279199999997,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.800083000000086,
+          "completionMs": 32.80016699999942,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.85608299999876,
+          "completionMs": 32.85624999999891,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.68091599999934,
+          "completionMs": 32.68104099999982,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.91833299999962,
+          "completionMs": 32.918416000000434,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.889374999998836,
+          "completionMs": 32.889499999999316,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 33.186916000000565,
+          "completionMs": 33.18708300000071,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.91450000000077,
+          "completionMs": 32.91454200000044,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 32.90179199999875,
+          "completionMs": 32.90187499999956,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 32.88483350000024,
+        "p95": 33.34445799999958,
+        "min": 32.13316699999996,
+        "max": 33.346041999999215
+      },
+      "completionMs": {
+        "median": 32.884979499999645,
+        "p95": 33.34458300000006,
+        "min": 32.13337499999943,
+        "max": 33.346292000000176
+      }
+    },
+    {
+      "scenario": "single-fill",
+      "restingOrders": 1000,
+      "eligibleMakers": 1,
+      "samples": [
+        {
+          "initialMs": 98.10099999999875,
+          "completionMs": 98.10124999999971,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.62729200000103,
+          "completionMs": 98.62737500000003,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.03820800000176,
+          "completionMs": 98.03829200000109,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.31745799999771,
+          "completionMs": 98.31762499999968,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.66058300000077,
+          "completionMs": 98.66066599999976,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.39991600000212,
+          "completionMs": 98.40004100000078,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 99.07820899999933,
+          "completionMs": 99.07849999999962,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.44704199999978,
+          "completionMs": 98.44733300000007,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.89604099999997,
+          "completionMs": 98.89633299999696,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.68708300000071,
+          "completionMs": 98.68724999999904,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 99.62616699999853,
+          "completionMs": 99.6263340000005,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.3470410000009,
+          "completionMs": 98.3472499999989,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 98.70470800000112,
+          "completionMs": 98.70491599999878,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.75816599999962,
+          "completionMs": 97.75854099999924,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 95.54083300000275,
+          "completionMs": 95.54100000000108,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 96.1627499999995,
+          "completionMs": 96.16291600000113,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 96.40179100000023,
+          "completionMs": 96.40187499999956,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 96.12125000000015,
+          "completionMs": 96.12145899999814,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.29870899999878,
+          "completionMs": 97.29899999999907,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.25679200000013,
+          "completionMs": 97.25695800000176,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.36362499999814,
+          "completionMs": 97.36383299999943,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.09104200000002,
+          "completionMs": 97.09125000000131,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.76650000000154,
+          "completionMs": 97.76679200000217,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.79000000000087,
+          "completionMs": 97.79016700000284,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.97016599999915,
+          "completionMs": 97.97045799999978,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 96.52687499999956,
+          "completionMs": 96.52716700000019,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.06087499999921,
+          "completionMs": 97.06112499999654,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 115.79354100000273,
+          "completionMs": 115.79395800000202,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 111.19337500000256,
+          "completionMs": 111.19362499999988,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 97.06687500000044,
+          "completionMs": 97.06708400000207,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 98.00418700000046,
+        "p95": 111.19337500000256,
+        "min": 95.54083300000275,
+        "max": 115.79354100000273
+      },
+      "completionMs": {
+        "median": 98.00437500000044,
+        "p95": 111.19362499999988,
+        "min": 95.54100000000108,
+        "max": 115.79395800000202
+      }
+    },
+    {
+      "scenario": "eight-fills",
+      "restingOrders": 1000,
+      "eligibleMakers": 8,
+      "samples": [
+        {
+          "initialMs": 257.45612500000425,
+          "completionMs": 513.5013749999998,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 259.2712080000056,
+          "completionMs": 518.7165410000016,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.1860419999939,
+          "completionMs": 523.3905839999934,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.5707500000062,
+          "completionMs": 522.8829170000026,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 263.9050830000051,
+          "completionMs": 525.8656250000058,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.89554099999805,
+          "completionMs": 520.6374579999974,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.11604200000147,
+          "completionMs": 521.4334589999999,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.4158329999991,
+          "completionMs": 522.0410830000037,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.90516699999716,
+          "completionMs": 521.3483750000014,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.6837080000041,
+          "completionMs": 522.1134999999995,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.2152920000008,
+          "completionMs": 523.729459000002,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.5751670000027,
+          "completionMs": 524.723917000003,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 265.0314169999983,
+          "completionMs": 529.2314170000027,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 263.2355419999949,
+          "completionMs": 525.6345839999994,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.7512910000005,
+          "completionMs": 521.1784999999945,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.0961659999957,
+          "completionMs": 519.1387499999983,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 259.580958999999,
+          "completionMs": 519.695584000001,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.70016600000235,
+          "completionMs": 522.1532910000024,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.14954099999886,
+          "completionMs": 521.9803329999995,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.5127089999951,
+          "completionMs": 518.9759589999958,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 264.205915999999,
+          "completionMs": 525.9015829999989,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 264.45445800000016,
+          "completionMs": 526.7405829999989,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.40291699999943,
+          "completionMs": 518.9749169999996,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.48316599999816,
+          "completionMs": 521.3488750000033,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 262.8804999999993,
+          "completionMs": 518.4106659999961,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 255.17216600000393,
+          "completionMs": 512.9861660000024,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 261.9311250000028,
+          "completionMs": 521.4436669999996,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.43983400000434,
+          "completionMs": 520.6415420000048,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.0426249999946,
+          "completionMs": 518.7189579999977,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 260.3882920000033,
+          "completionMs": 521.6339589999989,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 261.69193700000324,
+        "p95": 264.45445800000016,
+        "min": 255.17216600000393,
+        "max": 265.0314169999983
+      },
+      "completionMs": {
+        "median": 521.4385629999997,
+        "p95": 526.7405829999989,
+        "min": 512.9861660000024,
+        "max": 529.2314170000027
+      }
+    }
+  ]
+}
