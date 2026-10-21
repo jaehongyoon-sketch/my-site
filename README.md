@@ -1,5 +1,7 @@
 # Event — Prediction Market & Matching Engine
 
+[![CI](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml)
+
 A virtual-funds prediction market for user-created binary events, featuring complementary YES/NO order matching, trade-derived prices, and position valuation.
 
 **[Live Application](https://every-event.jaehong-yoon.workers.dev)**
@@ -146,7 +148,7 @@ These checks connect the market’s economic rules to its persisted state: a dis
 
 ## Verification
 
-The recorded local validation run completed **210 passing tests** across the project.
+The GitHub Actions run for commit [`125df10`](https://github.com/jaehongyoon-sketch/my-site/commit/125df10) completed **210 tests: 210 passed, 0 failed**.
 
 Market-specific tests cover:
 
@@ -179,6 +181,43 @@ EVENT_CLOUDFLARE_BUILD=1 npm run build
 ```
 
 **Tests:** [Market pricing and valuation](tests/market-prices.test.mjs) · [Full test directory](tests/)
+
+### Continuous Integration
+
+GitHub Actions validates the project on pushes to `main` and `repo-cleanup`, and on pull requests targeting `main`.
+
+The workflow runs in a fresh Ubuntu environment with Node.js 22.14.0 and performs four checks:
+
+| Step | Verification |
+|---|---|
+| Dependency installation | Installs dependencies from `package-lock.json` using `npm ci` |
+| Automated tests | Runs the test suite, including matching, cancellation, accounting, and market valuation checks |
+| Type checking | Checks TypeScript types and module resolution |
+| Production build | Builds the application using the Cloudflare production configuration |
+
+The test suite includes an in-memory SQLite harness that applies the project’s SQL migrations and creates isolated test accounts and events.
+
+A successful CI run was recorded for commit [`125df10`](https://github.com/jaehongyoon-sketch/my-site/commit/125df10). Subsequent results are available in the [CI execution history](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml).
+
+### Reproduce the Checks
+
+With Node.js 22.14.0 installed, run the following commands from the repository root:
+
+```bash
+npm ci
+npm test
+npm run typecheck
+```
+
+Build with the production configuration on macOS or Linux:
+
+```bash
+EVENT_CLOUDFLARE_BUILD=1 npm run build
+```
+
+The CI workflow validates the production build without deploying it.
+
+**Configuration:** [GitHub Actions workflow](.github/workflows/ci.yml) · [Test harness](tests/helpers/practice.mjs)
 
 ## Architecture
 
