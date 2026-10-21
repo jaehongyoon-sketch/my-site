@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - repo-cleanup
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Tests, types, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      CI: "true"
+      WRANGLER_SEND_METRICS: "false"
+      CLOUDFLARE_CF_FETCH_ENABLED: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check TypeScript
+        run: npm run typecheck
+
+      - name: Build production configuration
+        run: npm run build
+        env:
+          EVENT_CLOUDFLARE_BUILD: "1"

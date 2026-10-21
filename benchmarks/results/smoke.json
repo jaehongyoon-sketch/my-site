@@ -1,0 +1,287 @@
+{
+  "generatedAt": "2026-10-21T18:46:34.340Z",
+  "mode": "smoke",
+  "commit": "c77840a5515b5d66cb2ed229dd792dd19c0264d1",
+  "benchmarkSha256": "8187d7a3917dc5ccf20c5f1d36d7fbfc9654a20afac4f21514bb7a670b4f3fbf",
+  "environment": {
+    "node": "v24.19.0",
+    "sqlite": "3.53.3",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M5",
+    "logicalCpus": 10
+  },
+  "methodology": {
+    "warmups": 1,
+    "repeats": 3,
+    "sizes": [
+      10,
+      100
+    ],
+    "database": "node:sqlite in-memory via existing test adapter",
+    "state": "logical state restored including rowids before each iteration; warm caches; sequential",
+    "timing": "service calls only; excludes setup, state restoration, input construction and postcondition assertions; includes continuation account reads",
+    "multiFill": "8 eligible makers held constant across book sizes; not a full-book sweep",
+    "p95": "nearest-rank; exploratory with 30 samples; no HTTP, network, D1 or concurrency"
+  },
+  "cases": [
+    {
+      "scenario": "no-match",
+      "restingOrders": 10,
+      "eligibleMakers": 0,
+      "samples": [
+        {
+          "initialMs": 0.2544170000000179,
+          "completionMs": 0.2545829999999967,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24466699999999264,
+          "completionMs": 0.24520900000001689,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.24183400000001143,
+          "completionMs": 0.24204199999999787,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.24466699999999264,
+        "p95": 0.2544170000000179,
+        "min": 0.24183400000001143,
+        "max": 0.2544170000000179
+      },
+      "completionMs": {
+        "median": 0.24520900000001689,
+        "p95": 0.2545829999999967,
+        "min": 0.24204199999999787,
+        "max": 0.2545829999999967
+      }
+    },
+    {
+      "scenario": "single-fill",
+      "restingOrders": 10,
+      "eligibleMakers": 1,
+      "samples": [
+        {
+          "initialMs": 0.43812500000001364,
+          "completionMs": 0.4383330000000001,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.40845899999999347,
+          "completionMs": 0.4086250000000007,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.4407500000000084,
+          "completionMs": 0.4409170000000131,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.43812500000001364,
+        "p95": 0.4407500000000084,
+        "min": 0.40845899999999347,
+        "max": 0.4407500000000084
+      },
+      "completionMs": {
+        "median": 0.4383330000000001,
+        "p95": 0.4409170000000131,
+        "min": 0.4086250000000007,
+        "max": 0.4409170000000131
+      }
+    },
+    {
+      "scenario": "eight-fills",
+      "restingOrders": 10,
+      "eligibleMakers": 8,
+      "samples": [
+        {
+          "initialMs": 0.9004170000000045,
+          "completionMs": 2.184708999999998,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9940829999999892,
+          "completionMs": 2.0115830000000017,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.9389160000000061,
+          "completionMs": 1.9105410000000234,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.9389160000000061,
+        "p95": 0.9940829999999892,
+        "min": 0.9004170000000045,
+        "max": 0.9940829999999892
+      },
+      "completionMs": {
+        "median": 2.0115830000000017,
+        "p95": 2.184708999999998,
+        "min": 1.9105410000000234,
+        "max": 2.184708999999998
+      }
+    },
+    {
+      "scenario": "no-match",
+      "restingOrders": 100,
+      "eligibleMakers": 0,
+      "samples": [
+        {
+          "initialMs": 0.5970419999999876,
+          "completionMs": 0.5971250000000055,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.635167000000024,
+          "completionMs": 0.6353340000000003,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 0.6651249999999891,
+          "completionMs": 0.6652910000000247,
+          "fills": 0,
+          "initialFills": 0,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 0.635167000000024,
+        "p95": 0.6651249999999891,
+        "min": 0.5970419999999876,
+        "max": 0.6651249999999891
+      },
+      "completionMs": {
+        "median": 0.6353340000000003,
+        "p95": 0.6652910000000247,
+        "min": 0.5971250000000055,
+        "max": 0.6652910000000247
+      }
+    },
+    {
+      "scenario": "single-fill",
+      "restingOrders": 100,
+      "eligibleMakers": 1,
+      "samples": [
+        {
+          "initialMs": 1.4541249999999764,
+          "completionMs": 1.4541659999999865,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.554625000000044,
+          "completionMs": 1.554834000000028,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 1.4255840000000148,
+          "completionMs": 1.4257090000000403,
+          "fills": 1,
+          "initialFills": 1,
+          "continuations": 0,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 1.4541249999999764,
+        "p95": 1.554625000000044,
+        "min": 1.4255840000000148,
+        "max": 1.554625000000044
+      },
+      "completionMs": {
+        "median": 1.4541659999999865,
+        "p95": 1.554834000000028,
+        "min": 1.4257090000000403,
+        "max": 1.554834000000028
+      }
+    },
+    {
+      "scenario": "eight-fills",
+      "restingOrders": 100,
+      "eligibleMakers": 8,
+      "samples": [
+        {
+          "initialMs": 3.958708999999999,
+          "completionMs": 7.745624999999961,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7005829999999946,
+          "completionMs": 7.552542000000017,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        },
+        {
+          "initialMs": 3.7071670000000267,
+          "completionMs": 7.420334000000025,
+          "fills": 8,
+          "initialFills": 4,
+          "continuations": 1,
+          "invariantsPassed": true
+        }
+      ],
+      "initialMs": {
+        "median": 3.7071670000000267,
+        "p95": 3.958708999999999,
+        "min": 3.7005829999999946,
+        "max": 3.958708999999999
+      },
+      "completionMs": {
+        "median": 7.552542000000017,
+        "p95": 7.745624999999961,
+        "min": 7.420334000000025,
+        "max": 7.745624999999961
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+name: Matching benchmark
+
+on:
+  push:
+    branches: [matching-benchmark]
+    paths:
+      - 'benchmarks/**'
+      - '.github/workflows/benchmark.yml'
+      - 'lib/practice/**'
+      - 'tests/helpers/practice.mjs'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: matching-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Measure matching and check invariants
+        shell: bash
+        run: |
+          mkdir -p benchmarks/results
+          set -o pipefail
+          node benchmarks/matching.mjs | tee benchmarks/results/run.log
+      - name: Write result summary
+        run: |
+          python3 - <<'PY'
+          import json, os
+          r=json.load(open('benchmarks/results/baseline.json'))
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## Local SQLite matching benchmark\n\n')
+              f.write('Sequential in-memory service calls, not Cloudflare D1 or HTTP latency.\n\n')
+              f.write(f"Commit: `{r['commit']}` · Node: `{r['environment']['node']}`\n\n")
+              f.write('| Scenario | Resting orders | Initial median (ms) | Completion median (ms) | Completion p95 (ms) | Samples |\n|---|---:|---:|---:|---:|---:|\n')
+              for c in r['cases']:
+                  f.write(f"| {c['scenario']} | {c['restingOrders']} | {c['initialMs']['median']:.3f} | {c['completionMs']['median']:.3f} | {c['completionMs']['p95']:.3f} | {len(c['samples'])} |\n")
+              f.write('\nAll recorded samples passed quantity, maker-order, fee and cash-reservation checks.\n')
+          PY
+      - name: Upload results and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matching-benchmark-${{ github.sha }}
+          path: benchmarks/results/
+          retention-days: 30
+          if-no-files-found: warn
