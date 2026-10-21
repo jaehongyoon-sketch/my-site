@@ -1,0 +1,10 @@
+no-match     n=10 initial median=0.939ms completion median=0.940ms p95=0.975ms; checks passed
+single-fill  n=10 initial median=1.597ms completion median=1.598ms p95=1.652ms; checks passed
+eight-fills  n=10 initial median=3.393ms completion median=6.986ms p95=7.828ms; checks passed
+no-match     n=100 initial median=1.841ms completion median=1.842ms p95=1.864ms; checks passed
+single-fill  n=100 initial median=4.268ms completion median=4.269ms p95=4.382ms; checks passed
+eight-fills  n=100 initial median=10.524ms completion median=21.360ms p95=26.427ms; checks passed
+no-match     n=1000 initial median=81.937ms completion median=81.937ms p95=85.659ms; checks passed
+single-fill  n=1000 initial median=243.641ms completion median=243.642ms p95=250.008ms; checks passed
+eight-fills  n=1000 initial median=648.700ms completion median=1297.211ms p95=1319.235ms; checks passed
+Saved benchmarks/results/baseline.json
