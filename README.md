@@ -22,7 +22,7 @@ Review the updated order status, retained position, and released reservation.
 
 The demonstration shows how order execution and cancellation affect the market interface and account state.
 
-https://studio.youtube.com/video/yHVU8Il0_k4/edit
+https://www.youtube.com/watch?v=yHVU8Il0_k4
 
 ## Overview
 
