@@ -1,0 +1,52 @@
+name: Market microstructure
+
+on:
+  push:
+    branches: [market-microstructure]
+    paths:
+      - 'experiments/microstructure/**'
+      - 'tests/microstructure-metrics.test.mjs'
+      - 'tests/helpers/practice.mjs'
+      - 'lib/practice/**'
+      - 'drizzle/**'
+      - 'package-lock.json'
+      - '.github/workflows/microstructure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-microstructure-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Validate metrics and trading regressions
+        run: node --experimental-strip-types --test tests/microstructure-metrics.test.mjs tests/day11.test.mjs tests/day12.test.mjs tests/market-prices.test.mjs
+      - name: Run controlled scenarios
+        shell: bash
+        run: |
+          mkdir -p experiments/microstructure/results
+          set -o pipefail
+          node experiments/microstructure/run.mjs | tee experiments/microstructure/results/run.log
+      - name: Publish report in summary
+        run: cat experiments/microstructure/results/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload observations and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-microstructure-${{ github.sha }}
+          path: experiments/microstructure/results/
+          retention-days: 30
+          if-no-files-found: warn
