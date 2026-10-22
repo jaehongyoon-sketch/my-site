@@ -53,7 +53,7 @@ YES limit price + NO limit price ≥ 100¢
 
 The matching process checks account eligibility, event status, order expiry, and available quantity. Orders belonging to the same account cannot match each other.
 
-Eligible orders are processed by price priority, followed by registration order. The resting order executes at its limit price; the incoming order pays the complementary price.
+Incoming orders are considered in acceptance order. For each incoming order, eligible earlier opposing orders are ranked by limit price, then acceptance order. The earlier order executes at its limit price, and the later order pays the complementary price.
 
 ### Execution Example
 
