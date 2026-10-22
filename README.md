@@ -337,15 +337,46 @@ The implementation makes several market concepts directly observable:
 | [`tests/market-prices.test.mjs`](tests/market-prices.test.mjs) | Pricing and valuation verification |
 | [`drizzle/`](drizzle/) | Database migrations |
 
-# Local benchmark verification
+## Matching Benchmark
 
-Engine source commit: `c77840a5515b5d66cb2ed229dd792dd19c0264d1`
+A reproducible benchmark measures order-processing latency across books containing 10, 100, and 1,000 resting orders.
 
-Environment: Apple M5 / macOS arm64 / Node v24.19.0 / SQLite 3.53.3
+Three workloads cover:
 
-270 recorded measurements passed; 45 warmups also checked. Matching/cancellation/market regression tests: 24 passed, 0 failed. Existing dependency lockfile matches the local installed project; esbuild and zod versions checked. GitHub workflow has not yet been executed. No production deployment or performance change was made.
+- Non-crossing order placement with no execution.
+- Order placement resulting in one fill.
+- Order placement resulting in eight fills, including continuation beyond the current four-match limit per call.
 
-https://github.com/jaehongyoon-sketch/my-site/actions/runs/39661515710/attempts/1#summary-119435436293
+Each condition uses five warmup iterations and 30 measured repetitions: **270 recorded measurements across nine conditions**, plus 45 warmup iterations.
 
-Eight-fill samples all completed four fills initially and four in one continuation call. Growing processing times warrant query-plan investigation; these three book sizes do not establish asymptotic complexity. This is warm, sequential in-memory SQLite service timing, not Cloudflare D1, HTTP latency or production throughput.
+Every iteration checks executed quantities, maker ordering, fees, remaining reservations, and account cash conservation.
+
+### Results
+
+The benchmark completed successfully on GitHub Actions at commit
+[`522f2cf`](https://github.com/jaehongyoon-sketch/my-site/commit/522f2cf88b7cb7d7c97744fec218460e24f8db38).
+
+Environment: Linux x64, Node.js 22.14.0, SQLite 3.47.2, AMD EPYC 7763 runner with four logical CPUs.
+
+The table reports median completion time, including required continuation calls.
+
+| Resting orders | No execution | One fill | Eight fills |
+|---:|---:|---:|---:|
+| 10 | 0.940 ms | 1.598 ms | 6.986 ms |
+| 100 | 1.842 ms | 4.269 ms | 21.360 ms |
+| 1,000 | 81.937 ms | 243.642 ms | 1,297.211 ms |
+
+The eight-fill workload holds executed quantity constant across book sizes. Under the current matching limit, execution completes through the initial call and one continuation call.
+
+Processing time increased with resting-book size in these workloads, providing a baseline for investigating candidate selection and database query performance.
+
+### Methodology and Reproduction
+
+Measurements use the existing in-memory SQLite test adapter with sequential service calls. Database preparation, state restoration, and post-execution assertions are excluded from timing. Continuation timing includes the service's account reads.
+
+These measurements describe local service execution and exclude HTTP and Cloudflare D1 network latency.
+
+```bash
+npm ci
+node benchmarks/matching.mjs
 
