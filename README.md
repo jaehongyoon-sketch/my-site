@@ -37,6 +37,82 @@ The system maintains a clear distinction between:
 - **Last-traded price:** the price of the most recent completed trade.
 - **Position value:** holdings valued using the latest observed execution price.
 
+## Controlled Market Microstructure Study
+
+Controlled experiments examine how opposing liquidity, order fragmentation, and price constraints affect execution through the existing trading services.
+
+Each condition starts with a fresh in-memory SQLite database and three distinct funded accounts. Both YES and NO incoming orders are tested across **40 deterministic conditions**.
+
+| Experiment | Variable | Conditions |
+|---|---|---:|
+| Executable depth | 0, 3, 10, or 30 opposing contracts | 8 |
+| Order fragmentation | Ten contracts split into orders of size 10, 5, 2, or 1 | 8 |
+| Quote–limit compatibility | Maker bids of 40/50/60¢ × incoming limits of 35/40/50/60¢ | 24 |
+
+### Findings
+
+**Executable depth determines the available final fill under compatible prices.** For a ten-contract incoming order, opposing depths of 0, 3, 10, and 30 produce final fill rates of 0%, 30%, 100%, and 100%, respectively.
+
+**Order fragmentation affects immediate execution even when total depth and price remain unchanged.**
+
+| Maker orders | Contracts per order | First-call fill rate | Final fill rate | Additional matching calls |
+|---:|---:|---:|---:|---:|
+| 1 | 10 | 100% | 100% | 0 |
+| 2 | 5 | 100% | 100% | 0 |
+| 5 | 2 | 80% | 100% | 1 |
+| 10 | 1 | 40% | 100% | 2 |
+
+The engine processes up to four maker–taker matches per call. Fragmented liquidity can therefore require continuation calls to complete the same quantity.
+
+**Book depth becomes executable only within the incoming limit.** A resting YES bid of 60¢ offers a complementary NO execution price of 40¢. A NO limit of 35¢ remains unfilled, while a 50¢ limit executes at 40¢, receiving 10¢ of price improvement before fees.
+
+### Measurements and Validation
+
+```text
+YES ask           = 100¢ − best NO bid
+YES spread        = YES ask − best YES bid
+Executable depth  = opposing quantity priced within the incoming limit
+Fill rate         = executed quantity / requested quantity
+Price improvement = incoming limit − execution price
+```
+
+The runner records initial and final fills, spreads, execution prices, fees, and continuation counts. Every condition checks quantity bounds, maker ordering, complementary principal, exact fees, reservation movements, cash conservation, and position reconciliation.
+
+All **40 conditions passed** in the linked GitHub Actions run. Each deterministic condition runs once. The quote grid varies both spread and execution price; its results describe quote–limit compatibility.
+
+Outputs include:
+
+- `results.json`: observations, source commit, runtime environment, and source-file hashes.
+- `observations.csv`: one row per condition.
+- `report.md`: result tables and interpretation.
+- `run.log`: execution and validation records.
+
+**Evidence:** [Successful experiment run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39821619889) · [Experiment source](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/run.mjs) · [Metric definitions](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/metrics.mjs) · [Metric tests](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/tests/microstructure-metrics.test.mjs)
+
+## Matching Performance Baseline
+
+The benchmark measures service-call completion time with **10, 100, and 1,000 resting orders** across three scenarios: no match, one maker fill, and eight maker fills.
+
+Each combination uses five warm-up iterations and 30 measured iterations, producing **270 recorded timing samples**. Logical database state, including acceptance-order row IDs, is restored before each iteration.
+
+### Results
+
+Median completion time in milliseconds:
+
+| Resting orders | No match | One maker fill | Eight maker fills |
+|---:|---:|---:|---:|
+| 10 | 0.940 | 1.598 | 6.986 |
+| 100 | 1.842 | 4.269 | 21.360 |
+| 1,000 | 81.937 | 243.642 | 1,297.211 |
+
+**Environment:** GitHub Actions Linux x64 runner, Node.js 22.14.0, SQLite 3.47.2, and an AMD EPYC 7763 CPU reported by the runner.
+
+Measurements use the in-memory SQLite test adapter, warm caches, and sequential execution. Completion time includes required continuation calls and their account reads. Fixture creation, state restoration, and postcondition assertions are outside the timed section.
+
+The eight-fill scenario holds the number of eligible makers constant across book sizes. The results establish a reproducible baseline for evaluating changes to candidate selection and matching-service work. Timings cover the local service path, excluding HTTP and remote D1 latency.
+
+**Evidence:** [Successful benchmark run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39661515710) · [Raw timing samples and environment](https://github.com/jaehongyoon-sketch/my-site/blob/9ab7a4e9c552828aeee8edee62833db6941ff66c/matching-benchmark-522f2cf88b7cb7d7c97744fec218460e24f8db38/baseline.json) · [Benchmark source](https://github.com/jaehongyoon-sketch/my-site/blob/522f2cf88b7cb7d7c97744fec218460e24f8db38/benchmarks/matching.mjs)
+
 ## Matching Engine
 
 Binary contracts use a complementary pricing relationship:
