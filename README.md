@@ -455,3 +455,63 @@ These measurements describe local service execution and exclude HTTP and Cloudfl
 ```bash
 npm ci
 node benchmarks/matching.mjs
+
+# Two-sided contract buying: inventory strategy comparison
+
+Source commit: ceea85b24557cf6cf8b4f3e8b98d32622214e2f5. Mode: full. Node v22.14.0; SQLite 3.47.2.
+
+Selected skew: 1 cents per net contract using development paths only.
+168 episodes; 48 held-out paired paths; 60 arrivals per episode. All execution and accounting assertions passed.
+
+## Held-out evaluation
+
+P&L is an offline valuation of accumulated contracts, not an application settlement transaction. Fixed and inventory policies share each complete order path and terminal outcome. All amounts are virtual USD.
+
+| Regime | Policy | Terminal P&L | Reference P&L | Mean absolute inventory | Fill rate | Fees |
+|---|---|---:|---:|---:|---:|---:|
+| balanced | fixed | 5.307 | 2.838 | 7.739 | 32.6% | 0.065 |
+| balanced | inventory | 2.562 | 2.000 | 2.643 | 30.8% | 0.063 |
+| directional | fixed | 0.630 | 2.349 | 14.953 | 26.4% | 0.054 |
+| directional | inventory | 1.497 | 1.528 | 4.387 | 21.1% | 0.044 |
+| informed-shift | fixed | -4.659 | -1.659 | 13.175 | 32.6% | 0.065 |
+| informed-shift | inventory | -1.565 | 1.200 | 8.946 | 33.8% | 0.063 |
+
+## Paired differences: inventory minus fixed
+
+95% percentile bootstrap intervals resample whole paired episodes within each regime. They describe this synthetic generator with the selected parameter held fixed; individual orders are not treated as independent observations.
+
+| Regime | Metric | Mean difference | 95% interval |
+|---|---|---:|---|
+| balanced | terminalPnlUsd | -2.744 | [-5.019, -0.134] |
+| balanced | referencePnlUsd | -0.838 | [-0.968, -0.700] |
+| balanced | meanAbsInventory | -5.096 | [-6.759, -3.425] |
+| balanced | fillRate | -0.018 | [-0.030, -0.005] |
+| directional | terminalPnlUsd | 0.867 | [-4.347, 5.819] |
+| directional | referencePnlUsd | -0.821 | [-0.986, -0.631] |
+| directional | meanAbsInventory | -10.566 | [-12.507, -8.481] |
+| directional | fillRate | -0.053 | [-0.074, -0.029] |
+| informed-shift | terminalPnlUsd | 3.094 | [1.064, 4.781] |
+| informed-shift | referencePnlUsd | 2.859 | [2.619, 3.117] |
+| informed-shift | meanAbsInventory | -4.229 | [-5.266, -3.317] |
+| informed-shift | fillRate | 0.012 | [-0.016, 0.042] |
+
+## Development selection
+
+| Skew | Mean reference P&L | Mean absolute inventory | Selection score |
+|---:|---:|---:|---:|
+| 1 | 1.595 | 5.307 | 1.489 |
+| 0.5 | 1.600 | 7.032 | 1.459 |
+| 0.25 | 1.501 | 8.836 | 1.324 |
+
+## Reading the evidence
+
+- Lower inventory is beneficial for the exposure objective; compare it with changes in fill rate, reference P&L and terminal P&L.
+- Terminal P&L uses one Bernoulli event outcome per path. Reference P&L uses the generator’s common final probability and reduces terminal outcome noise; neither probability nor outcome is supplied to the policy.
+- The informed-shift regime stresses stale fixed-value quotes after a hidden probability change. Inventory adjustment alone is not a probability forecasting model.
+- Fee sensitivity at 0/25/50 bps in episodes.csv revalues the same fills. Orders are executed by the actual service at its 25 bps fee.
+- This is buying complementary binary contracts; holdings accumulate without resale or collateral recycling. Quote cancellation has no latency or cost in the simulation.
+- The 16 evaluation paths per regime are a small synthetic sample. Intervals are conditional on this generator and selection; they do not establish real-market profitability.
+
+![Inventory paths for the first preselected evaluation seed in each regime](inventory.svg)
+research-results/inventory-strategy/ceea85b24557cf6cf8b4f3e8b98d32622214e2f5/
+
