@@ -2,120 +2,38 @@
 
 [![CI](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml)
 
-A virtual-funds prediction market for user-created binary events, featuring complementary YES/NO order matching, trade-derived prices, and position valuation.
+A virtual-funds prediction market for user-created binary events, with complementary YES/NO order matching, exact monetary accounting, and trade-derived position valuation.
 
-**[Live Application](https://every-event.jaehong-yoon.workers.dev)**
+The project combines a working trading application with reproducible experiments on execution mechanics, matching performance, and inventory-adjusted contract buying.
 
-Built with **TypeScript, React, Cloudflare Workers, and Cloudflare D1**.
+**[Live Application](https://every-event.jaehong-yoon.workers.dev) · [Trading Demo](https://www.youtube.com/watch?v=yHVU8Il0_k4) · [CI History](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml)**
 
-Trading Demo
+Built with **TypeScript, React, Vinext, Cloudflare Workers, and Cloudflare D1**.
 
-A walkthrough of the virtual-funds trading workflow using two accounts:
+## Project Highlights
 
-Submit a limit order.
+| Area | Implementation and evidence |
+|---|---|
+| Trading workflow | Order submission, partial execution, cancellation, and released reservations |
+| Matching engine | Complementary pricing, acceptance-order processing, maker-price execution, and self-match prevention |
+| Accounting | Integer monetary units, exact fees, reserved funds, and fee-inclusive position valuation |
+| Execution mechanics | 40 controlled conditions covering depth, fragmentation, and quote–limit compatibility |
+| Performance | 270 recorded measurements across nine book-size/workload combinations |
+| Strategy comparison | 168 simulated episodes, including 48 held-out paths shared by two policies |
+| Verification | Automated trading tests, TypeScript checks, and production-build CI |
 
-Execute a partial fill against an opposing order.
+## Trading Demonstration
 
-Cancel the remaining unfilled quantity.
+The [two-account demonstration](https://www.youtube.com/watch?v=yHVU8Il0_k4) follows an order through its lifecycle:
 
-Review the updated order status, retained position, and released reservation.
-
-The demonstration shows how order execution and cancellation affect the market interface and account state.
-
-https://www.youtube.com/watch?v=yHVU8Il0_k4
-
-## Overview
-
-Event connects the lifecycle of a prediction-market order: submission, fund reservation, matching, execution, and portfolio valuation.
-
-Participants express a view through YES or NO limit orders. Compatible orders from different accounts form matched contracts, and completed trades establish the market’s observed price.
-
-The system maintains a clear distinction between:
-
-- **Limit price:** the maximum price a participant is willing to pay.
-- **Executable quote:** the price available against an eligible opposing order.
-- **Last-traded price:** the price of the most recent completed trade.
-- **Position value:** holdings valued using the latest observed execution price.
-
-## Controlled Market Microstructure Study
-
-Controlled experiments examine how opposing liquidity, order fragmentation, and price constraints affect execution through the existing trading services.
-
-Each condition starts with a fresh in-memory SQLite database and three distinct funded accounts. Both YES and NO incoming orders are tested across **40 deterministic conditions**.
-
-| Experiment | Variable | Conditions |
-|---|---|---:|
-| Executable depth | 0, 3, 10, or 30 opposing contracts | 8 |
-| Order fragmentation | Ten contracts split into orders of size 10, 5, 2, or 1 | 8 |
-| Quote–limit compatibility | Maker bids of 40/50/60¢ × incoming limits of 35/40/50/60¢ | 24 |
-
-### Findings
-
-**Executable depth determines the available final fill under compatible prices.** For a ten-contract incoming order, opposing depths of 0, 3, 10, and 30 produce final fill rates of 0%, 30%, 100%, and 100%, respectively.
-
-**Order fragmentation affects immediate execution even when total depth and price remain unchanged.**
-
-| Maker orders | Contracts per order | First-call fill rate | Final fill rate | Additional matching calls |
-|---:|---:|---:|---:|---:|
-| 1 | 10 | 100% | 100% | 0 |
-| 2 | 5 | 100% | 100% | 0 |
-| 5 | 2 | 80% | 100% | 1 |
-| 10 | 1 | 40% | 100% | 2 |
-
-The engine processes up to four maker–taker matches per call. Fragmented liquidity can therefore require continuation calls to complete the same quantity.
-
-**Book depth becomes executable only within the incoming limit.** A resting YES bid of 60¢ offers a complementary NO execution price of 40¢. A NO limit of 35¢ remains unfilled, while a 50¢ limit executes at 40¢, receiving 10¢ of price improvement before fees.
-
-### Measurements and Validation
-
-```text
-YES ask           = 100¢ − best NO bid
-YES spread        = YES ask − best YES bid
-Executable depth  = opposing quantity priced within the incoming limit
-Fill rate         = executed quantity / requested quantity
-Price improvement = incoming limit − execution price
-```
-
-The runner records initial and final fills, spreads, execution prices, fees, and continuation counts. Every condition checks quantity bounds, maker ordering, complementary principal, exact fees, reservation movements, cash conservation, and position reconciliation.
-
-All **40 conditions passed** in the linked GitHub Actions run. Each deterministic condition runs once. The quote grid varies both spread and execution price; its results describe quote–limit compatibility.
-
-Outputs include:
-
-- `results.json`: observations, source commit, runtime environment, and source-file hashes.
-- `observations.csv`: one row per condition.
-- `report.md`: result tables and interpretation.
-- `run.log`: execution and validation records.
-
-**Evidence:** [Successful experiment run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39821619889) · [Experiment source](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/run.mjs) · [Metric definitions](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/metrics.mjs) · [Metric tests](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/tests/microstructure-metrics.test.mjs)
-
-## Matching Performance Baseline
-
-The benchmark measures service-call completion time with **10, 100, and 1,000 resting orders** across three scenarios: no match, one maker fill, and eight maker fills.
-
-Each combination uses five warm-up iterations and 30 measured iterations, producing **270 recorded timing samples**. Logical database state, including acceptance-order row IDs, is restored before each iteration.
-
-### Results
-
-Median completion time in milliseconds:
-
-| Resting orders | No match | One maker fill | Eight maker fills |
-|---:|---:|---:|---:|
-| 10 | 0.940 | 1.598 | 6.986 |
-| 100 | 1.842 | 4.269 | 21.360 |
-| 1,000 | 81.937 | 243.642 | 1,297.211 |
-
-**Environment:** GitHub Actions Linux x64 runner, Node.js 22.14.0, SQLite 3.47.2, and an AMD EPYC 7763 CPU reported by the runner.
-
-Measurements use the in-memory SQLite test adapter, warm caches, and sequential execution. Completion time includes required continuation calls and their account reads. Fixture creation, state restoration, and postcondition assertions are outside the timed section.
-
-The eight-fill scenario holds the number of eligible makers constant across book sizes. The results establish a reproducible baseline for evaluating changes to candidate selection and matching-service work. Timings cover the local service path, excluding HTTP and remote D1 latency.
-
-**Evidence:** [Successful benchmark run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39661515710) · [Raw timing samples and environment](https://github.com/jaehongyoon-sketch/my-site/blob/9ab7a4e9c552828aeee8edee62833db6941ff66c/matching-benchmark-522f2cf88b7cb7d7c97744fec218460e24f8db38/baseline.json) · [Benchmark source](https://github.com/jaehongyoon-sketch/my-site/blob/522f2cf88b7cb7d7c97744fec218460e24f8db38/benchmarks/matching.mjs)
+1. Submit a limit order.
+2. Execute a partial fill against an opposing order.
+3. Cancel the remaining unfilled quantity.
+4. Review the retained position, updated order state, and released reservation.
 
 ## Matching Engine
 
-Binary contracts use a complementary pricing relationship:
+Each matched YES/NO pair contributes one virtual dollar of principal before fees:
 
 ```text
 YES execution price + NO execution price = 100¢
@@ -127,187 +45,282 @@ Opposing buy orders become eligible to match when:
 YES limit price + NO limit price ≥ 100¢
 ```
 
-The matching process checks account eligibility, event status, order expiry, and available quantity. Orders belonging to the same account cannot match each other.
-
 Incoming orders are considered in acceptance order. For each incoming order, eligible earlier opposing orders are ranked by limit price, then acceptance order. The earlier order executes at its limit price, and the later order pays the complementary price.
+
+Eligibility checks include account status, trading restrictions, event status and revision, order expiry, and remaining quantity. Orders from the same account cannot match each other.
 
 ### Execution Example
 
-| Step | Order | Result |
+| Step | Action | Result |
 |---|---|---|
-| 1 | Account A submits YES at 60¢ for 10 contracts | Order rests in the book |
-| 2 | Account B submits NO with a 50¢ limit for 3 contracts | Combined limits satisfy the matching condition |
-| 3 | Three contract pairs execute | A pays 60¢ per YES; B pays 40¢ per NO |
-| 4 | The book updates | A retains 7 unfilled contracts |
+| 1 | A submits YES at 60¢ for 10 contracts | Funds are reserved and the order rests |
+| 2 | B submits NO with a 50¢ limit for 3 contracts | Three pairs execute at YES 60¢ / NO 40¢ |
+| 3 | A cancels the remaining 7 contracts | Unfilled reservations are released |
+| 4 | Accounts are reviewed | Executed positions remain |
 
-Before fees, the matched quantities commit:
-
-```text
-Account A: 3 × $0.60 = $1.80
-Account B: 3 × $0.40 = $1.20
-Total:                  $3.00
-```
-
-Each matched YES/NO pair therefore contributes $1. Partial fills preserve the remaining order quantity.
+B receives 10¢ of price improvement relative to its limit. Before fees, the three matched pairs commit $1.80 from A and $1.20 from B.
 
 **Implementation:** [Matching logic](lib/practice/matching.ts) · [Order processing](lib/practice/service.ts)
 
-## Market Data & Price Formation
+## Accounting and Market Data
 
-Market prices are derived from completed trades. Unfilled orders contribute to available depth without being recorded as executions.
-
-The market interface provides:
-
-- Latest YES execution price and change from the preceding trade.
-- A chart of recent execution prices.
-- Available quantities at executable YES and NO prices.
-- Recent trade history and matched volume.
-- Market updates every five seconds while the page is visible.
-
-A YES purchase quote is derived from the complementary resting NO order, and vice versa:
-
-```text
-Executable YES price = 100¢ − resting NO bid
-Executable NO price  = 100¢ − resting YES bid
-```
-
-Matched volume counts each contract pair once. Markets without executions remain explicitly unpriced.
-
-**Implementation:** [Market data](lib/practice/market.ts) · [Market interface](app/events/market-panel.tsx)
-
-## Accounting & Position Valuation
-
-Monetary calculations use integer units throughout the trading logic:
+Monetary calculations use integer units:
 
 ```text
 1 cent = 400 internal units
 $1     = 40,000 internal units
 ```
 
-This representation supports exact calculation of the 0.25% trading fee for cent-denominated contract prices, avoiding floating-point rounding in order costs and reservations.
-
-For price `p` in cents and quantity `q`:
+For a current-policy order priced at `p` cents with quantity `q`, the 0.25% trading fee is represented exactly:
 
 ```text
-Principal = p × q × 400 internal units
-Fee       = p × q internal units
+Principal = p × q × 400 units
+Fee       = p × q units
 Reserve   = Principal + Fee
 ```
 
-Accounts receive a one-time allocation of $1,000 in virtual funds. Order processing tracks reserved funds, executed costs, and remaining quantities.
+Accounts receive a one-time $1,000 virtual allocation. Guarded updates and atomic database batches connect executions to order progress, reserved funds, available funds, and execution costs.
 
-Positions use the latest execution price for the corresponding outcome:
+Cancellation releases reservations for unfilled quantity. It preserves executed holdings.
+
+Market prices originate from completed executions. Resting orders contribute depth, while markets without executions remain unpriced. Matched volume counts each YES/NO pair once.
 
 ```text
-Marked position value = Quantity × Latest outcome price
-Unrealized P&L        = Marked position value − Fee-inclusive acquisition cost
+Executable YES price = 100¢ − eligible resting NO bid
+Executable NO price  = 100¢ − eligible resting YES bid
 ```
 
-The portfolio separates trade-derived valuation from positions that do not yet have an observed market price.
+The portfolio uses trade-derived marks:
 
-**Implementation:** [Monetary arithmetic](lib/practice/money.ts) · [Position valuation](lib/practice/positions.ts)
-
-## Transaction Integrity
-
-Order processing combines validation, guarded database updates, and atomic batches to keep order state and account balances consistent.
-
-The implementation addresses:
-
-- Partial fills and remaining executable quantities.
-- Prevention of self-matching.
-- Expired orders and changes to event eligibility.
-- Paused markets and restricted accounts.
-- Revision checks during state changes.
-- Consistent accounting when a database operation fails.
-
-These checks connect the market’s economic rules to its persisted state: a displayed trade must correspond to a recorded execution and its associated accounting entries.
-
-## Verification
-
-The GitHub Actions run for commit [`125df10`](https://github.com/jaehongyoon-sketch/my-site/commit/125df10) completed **210 tests: 210 passed, 0 failed**.
-
-Market-specific tests cover:
-
-| Area | Verified behavior |
-|---|---|
-| Price formation | Prices originate from recorded executions |
-| Complementary contracts | YES and NO execution prices sum to 100¢ |
-| Empty markets | No artificial last-traded price |
-| Order depth | Remaining quantities reflect partial fills |
-| Trade history | Executions appear in chronological order |
-| Volume | Each matched pair is counted once |
-| Position valuation | Acquisition costs include fees |
-| Eligibility | Self-matching, expiry, pauses, and restrictions are checked |
-| Failure handling | Failed operations preserve accounting consistency |
-
-Validation commands:
-
-```bash
-# Project test suite
-node --experimental-strip-types --test tests/*.test.mjs
-
-# Type checking
-npx tsc --noEmit
-
-# Application build
-npm run build
-
-# Cloudflare production build
-EVENT_CLOUDFLARE_BUILD=1 npm run build
+```text
+Marked position value = quantity × latest outcome execution price
+Unrealized P&L        = marked value − fee-inclusive acquisition cost
 ```
 
-**Tests:** [Market pricing and valuation](tests/market-prices.test.mjs) · [Full test directory](tests/)
+**Implementation:** [Money arithmetic](lib/practice/money.ts) · [Market data](lib/practice/market.ts) · [Position valuation](lib/practice/positions.ts)
 
-### Continuous Integration
+## Controlled Market Microstructure Study
 
-GitHub Actions validates the project on pushes to `main` and `repo-cleanup`, and on pull requests targeting `main`.
+**Research question:** How do opposing depth, order fragmentation, and price constraints affect execution through the implemented matching service?
 
-The workflow runs in a fresh Ubuntu environment with Node.js 22.14.0 and performs four checks:
+Each condition starts with a fresh in-memory SQLite database and three distinct funded accounts. Both YES and NO incoming orders are tested.
 
-| Step | Verification |
+| Experiment | Variable | Conditions |
+|---|---|---:|
+| Executable depth | 0, 3, 10, or 30 opposing contracts | 8 |
+| Order fragmentation | Ten contracts split into orders of size 10, 5, 2, or 1 | 8 |
+| Quote–limit compatibility | Maker bids of 40/50/60¢ × incoming limits of 35/40/50/60¢ | 24 |
+
+All **40 deterministic conditions passed** in the linked GitHub Actions run.
+
+### Findings
+
+For a ten-contract incoming order at compatible prices, opposing depths of 0, 3, 10, and 30 produce final fill rates of 0%, 30%, 100%, and 100%.
+
+At identical prices and total depth, fragmentation changes the quantity filled on the initial call:
+
+| Maker orders | Contracts per order | First-call fill rate | Final fill rate | Additional calls |
+|---:|---:|---:|---:|---:|
+| 1 | 10 | 100% | 100% | 0 |
+| 2 | 5 | 100% | 100% | 0 |
+| 5 | 2 | 80% | 100% | 1 |
+| 10 | 1 | 40% | 100% | 2 |
+
+The engine processes up to four maker–taker matches per call. Fragmented liquidity can therefore require continuation calls even when aggregate depth is unchanged.
+
+The price grid also confirms that displayed quantity becomes executable only within the incoming limit. Against a resting YES bid of 60¢, a NO limit of 35¢ remains unfilled, while a 50¢ limit executes at 40¢.
+
+### Measurements
+
+```text
+YES ask           = 100¢ − best NO bid
+YES spread        = YES ask − best YES bid
+Executable depth  = opposing quantity within the incoming limit
+Fill rate         = executed quantity / requested quantity
+Price improvement = incoming limit − execution price
+```
+
+Every condition checks quantity bounds, maker ordering, complementary principal, fees, reservation movements, cash conservation, and position reconciliation.
+
+Each condition runs once. These are controlled mechanism experiments; the quote grid varies both spread and execution price.
+
+**Evidence:** [Successful run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39821619889) · [Experiment source](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/run.mjs) · [Metric definitions](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/experiments/microstructure/metrics.mjs) · [Metric tests](https://github.com/jaehongyoon-sketch/my-site/blob/d1412efab273cbb49c4ac50119e444b3e30f6466/tests/microstructure-metrics.test.mjs)
+
+## Matching Performance Baseline
+
+The benchmark measures service-call completion time with 10, 100, and 1,000 resting orders across three workloads.
+
+Each combination uses five warm-up iterations and 30 measured repetitions: **270 recorded measurements across nine conditions**.
+
+### Results
+
+Median completion time in milliseconds:
+
+| Resting orders | No match | One maker fill | Eight maker fills |
+|---:|---:|---:|---:|
+| 10 | 0.940 | 1.598 | 6.986 |
+| 100 | 1.842 | 4.269 | 21.360 |
+| 1,000 | 81.937 | 243.642 | 1,297.211 |
+
+**Environment:** GitHub Actions Linux x64, Node.js 22.14.0, SQLite 3.47.2, AMD EPYC 7763 runner with four logical CPUs.
+
+Measurements use an in-memory SQLite test adapter, warm caches, and sequential service calls. Logical state, including acceptance-order row IDs, is restored before each iteration.
+
+Completion includes required continuation calls and their account reads. Database preparation, state restoration, and postcondition assertions are outside the timed section. HTTP and remote D1 latency are excluded.
+
+The eight-fill workload holds eligible maker count and executed quantity constant across book sizes. Increasing completion time provides a baseline for investigating candidate selection and database-query performance.
+
+**Evidence:** [Successful run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/39661515710) · [Raw timing samples](https://github.com/jaehongyoon-sketch/my-site/blob/9ab7a4e9c552828aeee8edee62833db6941ff66c/matching-benchmark-522f2cf88b7cb7d7c97744fec218460e24f8db38/baseline.json) · [Benchmark source](https://github.com/jaehongyoon-sketch/my-site/blob/522f2cf88b7cb7d7c97744fec218460e24f8db38/benchmarks/matching.mjs)
+
+## Inventory-Adjusted Contract Buying
+
+**Research question:** Can inventory-adjusted buy quotes reduce YES/NO position imbalance, and what execution and valuation trade-offs accompany that reduction?
+
+The experiment compares two policies through the existing order-placement and cancellation services:
+
+| Policy | Quoting rule |
 |---|---|
-| Dependency installation | Installs dependencies from `package-lock.json` using `npm ci` |
-| Automated tests | Runs the test suite, including matching, cancellation, accounting, and market valuation checks |
-| Type checking | Checks TypeScript types and module resolution |
-| Production build | Builds the application using the Cloudflare production configuration |
+| Fixed | Buy YES at 45¢ and NO at 45¢ |
+| Inventory-adjusted | Lower the bid for the overweight outcome and raise the bid for the underweight outcome |
 
-The test suite includes an in-memory SQLite harness that applies the project’s SQL migrations and creates isolated test accounts and events.
+Both policies receive $1,000, quote up to three contracts per outcome, and use an absolute net-inventory cap of 30 contracts.
 
-A successful CI run was recorded for commit [`125df10`](https://github.com/jaehongyoon-sketch/my-site/commit/125df10). Subsequent results are available in the [CI execution history](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml).
+For net inventory `I = YES holdings − NO holdings`:
 
-### Reproduce the Checks
+```text
+Skew    = sign(I) × round(abs(I) × k), capped at ±15¢
+YES bid = 45¢ − skew
+NO bid  = 45¢ + skew
+```
 
-With Node.js 22.14.0 installed, run the following commands from the repository root:
+Orders are refreshed between arrivals. Unfilled reservations are released, while executed holdings accumulate without resale or collateral recycling.
+
+### Development and Evaluation
+
+The experiment uses three synthetic order-flow regimes:
+
+- **Balanced:** equal YES/NO arrival probabilities and a constant 50% reference probability.
+- **Directional:** 80% of arrivals favor one outcome while reference probability remains 50%.
+- **Informed shift:** reference probability changes from 50% to 35% or 65% halfway through the episode, followed by arrivals biased toward the more likely outcome.
+
+Each episode contains 60 arrivals. Paired policies receive identical incoming orders and terminal event outcomes.
+
+Parameter selection uses **18 development paths** and candidate skews of 0.25, 0.5, and 1 cent per net contract:
+
+```text
+Selection score = mean terminal reference-value P&L
+                  − 0.02 × mean time-average absolute inventory
+```
+
+The inventory penalty is an explicit experiment preference. The selected parameter, **k = 1**, is then evaluated on **48 separate paths**, with 16 per regime.
+
+The full run contains **168 episodes**: 72 development episodes and 96 evaluation episodes.
+
+### Common Valuation
+
+Both strategies use the same terminal outcome and reference probability.
+
+```text
+Reference P&L = YES quantity × p + NO quantity × (1 − p)
+                − executed principal − fees
+
+Terminal P&L  = winning contract quantity × $1
+                − executed principal − fees
+```
+
+Neither the next arrival nor the reference probability or terminal outcome is supplied to the quoting policy. Valuation is performed offline; it does not execute an application settlement transaction.
+
+### Evaluation Results
+
+The following values are means over the 16 held-out paths in each regime. P&L is in virtual USD after execution fees.
+
+| Regime | Policy | Terminal P&L | Reference P&L | Mean absolute net inventory | Fill rate |
+|---|---|---:|---:|---:|---:|
+| Balanced | Fixed | 5.307 | 2.838 | 7.739 | 32.6% |
+| Balanced | Inventory-adjusted | 2.562 | 2.000 | 2.643 | 30.8% |
+| Directional | Fixed | 0.630 | 2.349 | 14.953 | 26.4% |
+| Directional | Inventory-adjusted | 1.497 | 1.528 | 4.387 | 21.1% |
+| Informed shift | Fixed | −4.659 | −1.659 | 13.175 | 32.6% |
+| Informed shift | Inventory-adjusted | −1.565 | 1.200 | 8.946 | 33.8% |
+
+Inventory adjustment reduced time-average absolute net holdings by **65.9%, 70.7%, and 32.1%**, respectively.
+
+This reduction involved a trade-off. Execution rates and reference-value P&L decreased in balanced and directional flow. Under the informed-shift scenario, inventory adjustment improved reference-value P&L and reduced terminal losses.
+
+Selected paired differences, calculated as inventory-adjusted minus fixed:
+
+| Regime | Metric | Mean difference | 95% bootstrap interval |
+|---|---|---:|---|
+| Balanced | Reference P&L | −$0.838 | [−$0.968, −$0.700] |
+| Directional | Reference P&L | −$0.821 | [−$0.986, −$0.631] |
+| Informed shift | Reference P&L | +$2.859 | [+$2.619, +$3.117] |
+| Directional | Terminal P&L | +$0.867 | [−$4.347, +$5.819] |
+
+Intervals use 2,000 bootstrap resamples of whole paired episodes within each regime. They are conditional on the synthetic generator and selected parameter. The directional terminal-P&L interval includes zero.
+
+### Validation and Provenance
+
+The local run passed **29 related tests** and execution/accounting assertions across all **168 episodes**. Node.js 22.14.0 and 24.19.0 produced identical episode metrics, parameter selection, and summary results.
+
+Local validation environment: **macOS arm64, Node.js 22.14.0, SQLite 3.47.2**.
+
+Base application commit: [`ceea85b`](https://github.com/jaehongyoon-sketch/my-site/commit/ceea85b24557cf6cf8b4f3e8b98d32622214e2f5). This identifies the application version used before adding the experiment files; experiment-source hashes are recorded separately in `results.json`.
+
+The runner produces:
+
+- `results.json`: configuration, environment, source hashes, summaries, and episode metrics.
+- `paths.json`: shared arrival paths and terminal outcomes.
+- `selection.json`: development-stage parameter selection.
+- `episodes.csv`: individual episode results and fee sensitivity.
+- `trajectories.csv`: per-arrival quotes, inventory, and reference P&L.
+- `report.md` and `inventory.svg`: tables, interpretation, and predefined example paths.
+
+The study evaluates finite-horizon inventory control under declared synthetic conditions. Its central result is the relationship between inventory concentration, execution rate, and fee-inclusive value.
+
+## Automated Verification
+
+GitHub Actions installs locked dependencies, runs automated tests, checks TypeScript, and builds the Cloudflare production configuration.
+
+The test harness applies SQL migrations to fresh in-memory SQLite databases and creates isolated accounts and events.
+
+| Area | Behavior checked |
+|---|---|
+| Matching | Complementary prices, partial fills, and execution ordering |
+| Cancellation | Remaining quantities and released reservations |
+| Market data | Execution-derived prices and counted-once volume |
+| Valuation | Fee-inclusive costs and position reconciliation |
+| Eligibility | Self-matching, expiry, pauses, and restrictions |
+| Failure handling | Accounting consistency after failed operations |
+
+### Reproduce Application Checks
+
+With Node.js 22.14.0 installed:
 
 ```bash
 npm ci
 npm test
 npm run typecheck
-```
-
-Build with the production configuration on macOS or Linux:
-
-```bash
 EVENT_CLOUDFLARE_BUILD=1 npm run build
 ```
 
-The CI workflow validates the production build without deploying it.
+The final command uses macOS/Linux shell syntax. CI builds the application without deploying it.
 
-**Configuration:** [GitHub Actions workflow](.github/workflows/ci.yml) · [Test harness](tests/helpers/practice.mjs)
+**Evidence:** [CI history](https://github.com/jaehongyoon-sketch/my-site/actions/workflows/ci.yml) · [Workflow](.github/workflows/ci.yml) · [Test suite](tests/) · [Test harness](tests/helpers/practice.mjs)
 
 ## Architecture
 
 ```text
-React Interface
+React interface
+      │
+      ▼
+API validation and authentication
       │
       ▼
 Cloudflare Workers
-      │
-      ├── Google OAuth & account access
-      ├── User-created event management
-      ├── Order validation & fund reservation
-      ├── Complementary order matching
-      └── Market data & position valuation
+      ├── Event management
+      ├── Order validation and reservations
+      ├── Complementary matching
+      └── Market data and position valuation
                     │
                     ▼
               Cloudflare D1
@@ -315,203 +328,55 @@ Cloudflare Workers
 
 | Component | Responsibility |
 |---|---|
-| TypeScript / React | Event pages, order entry, market display, and portfolio |
-| Cloudflare Workers | Application requests and trading logic |
-| Cloudflare D1 | Persistent accounts, events, orders, and executions |
+| TypeScript / React / Vinext | Event pages, order entry, market display, and portfolio |
+| Cloudflare Workers | Request handling and trading services |
+| Cloudflare D1 | Accounts, events, orders, executions, and accounting state |
 | Google OAuth | Authentication |
 | SQL migrations | Database schema management |
 
-## Administrator Access & Market Operations
+## Administrator Access and Market Operations
 
-Administrator access is tied to an active application account through the server-side `ADMIN_ACCOUNT_ID` setting. Administrative pages and API endpoints verify the authenticated account before permitting privileged operations.
-
-The administration interface provides:
+Administrator access is tied to an active application account through the server-side `ADMIN_ACCOUNT_ID` setting. Privileged pages and API endpoints verify the authenticated account.
 
 | Area | Functionality |
 |---|---|
-| Event management | Create and edit drafts, publish events, archive published events, and delete eligible drafts |
-| Account oversight | View registered profiles, account status, roles, and unexpired session counts |
+| Event management | Create and edit drafts, publish events, archive events, and delete eligible drafts |
+| Account oversight | Inspect profiles, account status, roles, and unexpired session counts |
 | Trading eligibility | Manage account trading restrictions |
 | Market operations | Pause or resume practice trading |
 | Outcome review | Review event outcomes |
 | Audit history | Inspect recorded administrative actions |
 
-Published event questions and rules are locked to preserve the terms under which participants placed orders. Event updates use revision checks to detect conflicting changes, while administrative mutations record audit entries.
+Published event questions and rules are locked to preserve the terms under which orders were placed. Revision checks detect conflicting changes, and administrative mutations record audit entries.
 
-Authorization is enforced on the server. Navigation adapts to the account’s permissions, providing administrators with event, member, and operational controls.
+**Implementation:** [Authorization](lib/accounts/access.ts) · [Event administration](lib/events/service.ts) · [Administrative API](app/api/admin/events/route.ts) · [Operations interface](app/admin/operations/panel.tsx)
 
-**Implementation:** [Account authorization](lib/accounts/access.ts) · [Event administration](lib/events/service.ts) · [Administrative API](app/api/admin/events/route.ts) · [Operations interface](app/admin/operations/panel.tsx)
+## Trading Interface and Domain Types
 
-## Trading Interface & Domain Types
+The interface connects event discovery, saved events, order entry, trade history, and portfolio monitoring. Market data updates every five seconds while the page is visible.
 
-The application separates presentation, domain definitions, and persistent trading operations.
+Navigation adapts to authentication and administrative permissions, with desktop and mobile access to the primary workflows.
 
-```text
-UI Components
-    │  User input and market display
-    ▼
-API Validation & Authorization
-    │  Validated requests
-    ▼
-Domain & Trading Services
-    │  Matching rules and accounting operations
-    ▼
-Database
-```
+TypeScript domain definitions represent outcomes, order requests, estimates, and lifecycle states. Runtime schemas validate submitted data, including:
 
-### Trading Interface
-
-The interface connects event discovery, order entry, market data, and portfolio monitoring:
-
-- **Explore and Saved:** browse published events and maintain a watchlist.
-- **Market view:** inspect execution history, price changes, and available order depth.
-- **Order entry:** select an executable price and review quantity and estimated costs.
-- **Portfolio:** monitor holdings, acquisition costs, and trade-based valuations.
-- **Account-aware navigation:** display sign-in status and authorized administrative controls.
-
-Desktop navigation and mobile bottom navigation provide access to the same primary workflows. Navigation includes active-page indicators, and the application provides a skip link to the main content.
-
-### Domain Types & Runtime Validation
-
-TypeScript definitions represent outcomes, quote requests, order estimates, and lifecycle states. Literal unions make distinctions such as YES versus NO and draft versus published events explicit in the code.
-
-Runtime schemas validate incoming data at application boundaries, including:
-
-- Allowed outcome and event-status values.
+- Allowed outcomes and event statuses.
 - Integer quantities and price ranges.
-- Required event titles, rules, source URLs, and closing dates.
+- Event titles, rules, source URLs, and closing dates.
 - Revision numbers used to detect stale updates.
 
-Static types describe the data expected by application code; runtime validation checks the data actually received. Trading services then enforce account eligibility, matching conditions, and monetary calculations.
+Trading services apply eligibility, matching, and accounting rules after request validation.
 
-**Implementation:** [Domain types](lib/domain/types.ts) · [Lifecycle definitions](lib/domain/lifecycle.ts) · [Validation schemas](lib/domain/validation.ts) · [Event schemas and rules](lib/events/service.ts) · [Application navigation](components/app-navigation.tsx)
-
-## Quantitative Concepts
-
-The implementation makes several market concepts directly observable:
-
-**Order flow and price formation.** Submitted orders create potential liquidity; completed executions establish observed prices.
-
-**Limit constraints and execution quality.** An incoming order can execute below its maximum acceptable price when the opposing resting order permits it.
-
-**Liquidity and partial execution.** Available opposing quantity determines how much of an order can fill immediately.
-
-**Accounting consistency.** Contract prices, fees, reservations, and position costs share a discrete monetary representation.
-
-**Trade-based valuation.** Portfolio marks are calculated from execution records and linked to the cost of acquiring each position.
+**Implementation:** [Domain types](lib/domain/types.ts) · [Lifecycle definitions](lib/domain/lifecycle.ts) · [Validation schemas](lib/domain/validation.ts) · [Navigation](components/app-navigation.tsx)
 
 ## Code Guide
 
 | File | Purpose |
 |---|---|
-| [`lib/practice/matching.ts`](lib/practice/matching.ts) | Matching rules and execution selection |
-| [`lib/practice/service.ts`](lib/practice/service.ts) | Order processing and account updates |
-| [`lib/practice/money.ts`](lib/practice/money.ts) | Integer monetary calculations |
+| [`lib/practice/matching.ts`](lib/practice/matching.ts) | Candidate selection, execution prices, and matching updates |
+| [`lib/practice/service.ts`](lib/practice/service.ts) | Order submission, cancellation, continuation, and account state |
+| [`lib/practice/money.ts`](lib/practice/money.ts) | Integer principal, fee, and reservation calculations |
 | [`lib/practice/market.ts`](lib/practice/market.ts) | Trade prices, market depth, and volume |
-| [`lib/practice/positions.ts`](lib/practice/positions.ts) | Holdings, cost basis, and valuation |
+| [`lib/practice/positions.ts`](lib/practice/positions.ts) | Holdings, acquisition costs, and valuation |
 | [`app/events/market-panel.tsx`](app/events/market-panel.tsx) | Market visualization and quote interaction |
 | [`tests/market-prices.test.mjs`](tests/market-prices.test.mjs) | Pricing and valuation verification |
 | [`drizzle/`](drizzle/) | Database migrations |
-
-## Matching Benchmark
-
-A reproducible benchmark measures order-processing latency across books containing 10, 100, and 1,000 resting orders.
-
-Three workloads cover:
-
-- Non-crossing order placement with no execution.
-- Order placement resulting in one fill.
-- Order placement resulting in eight fills, including continuation beyond the current four-match limit per call.
-
-Each condition uses five warmup iterations and 30 measured repetitions: **270 recorded measurements across nine conditions**, plus 45 warmup iterations.
-
-Every iteration checks executed quantities, maker ordering, fees, remaining reservations, and account cash conservation.
-
-### Results
-
-The benchmark completed successfully on GitHub Actions at commit
-[`522f2cf`](https://github.com/jaehongyoon-sketch/my-site/commit/522f2cf88b7cb7d7c97744fec218460e24f8db38).
-
-Environment: Linux x64, Node.js 22.14.0, SQLite 3.47.2, AMD EPYC 7763 runner with four logical CPUs.
-
-The table reports median completion time, including required continuation calls.
-
-| Resting orders | No execution | One fill | Eight fills |
-|---:|---:|---:|---:|
-| 10 | 0.940 ms | 1.598 ms | 6.986 ms |
-| 100 | 1.842 ms | 4.269 ms | 21.360 ms |
-| 1,000 | 81.937 ms | 243.642 ms | 1,297.211 ms |
-
-The eight-fill workload holds executed quantity constant across book sizes. Under the current matching limit, execution completes through the initial call and one continuation call.
-
-Processing time increased with resting-book size in these workloads, providing a baseline for investigating candidate selection and database query performance.
-
-### Methodology and Reproduction
-
-Measurements use the existing in-memory SQLite test adapter with sequential service calls. Database preparation, state restoration, and post-execution assertions are excluded from timing. Continuation timing includes the service's account reads.
-
-These measurements describe local service execution and exclude HTTP and Cloudflare D1 network latency.
-
-```bash
-npm ci
-node benchmarks/matching.mjs
-
-# Two-sided contract buying: inventory strategy comparison
-
-Source commit: ceea85b24557cf6cf8b4f3e8b98d32622214e2f5. Mode: full. Node v22.14.0; SQLite 3.47.2.
-
-Selected skew: 1 cents per net contract using development paths only.
-168 episodes; 48 held-out paired paths; 60 arrivals per episode. All execution and accounting assertions passed.
-
-## Held-out evaluation
-
-P&L is an offline valuation of accumulated contracts, not an application settlement transaction. Fixed and inventory policies share each complete order path and terminal outcome. All amounts are virtual USD.
-
-| Regime | Policy | Terminal P&L | Reference P&L | Mean absolute inventory | Fill rate | Fees |
-|---|---|---:|---:|---:|---:|---:|
-| balanced | fixed | 5.307 | 2.838 | 7.739 | 32.6% | 0.065 |
-| balanced | inventory | 2.562 | 2.000 | 2.643 | 30.8% | 0.063 |
-| directional | fixed | 0.630 | 2.349 | 14.953 | 26.4% | 0.054 |
-| directional | inventory | 1.497 | 1.528 | 4.387 | 21.1% | 0.044 |
-| informed-shift | fixed | -4.659 | -1.659 | 13.175 | 32.6% | 0.065 |
-| informed-shift | inventory | -1.565 | 1.200 | 8.946 | 33.8% | 0.063 |
-
-## Paired differences: inventory minus fixed
-
-95% percentile bootstrap intervals resample whole paired episodes within each regime. They describe this synthetic generator with the selected parameter held fixed; individual orders are not treated as independent observations.
-
-| Regime | Metric | Mean difference | 95% interval |
-|---|---|---:|---|
-| balanced | terminalPnlUsd | -2.744 | [-5.019, -0.134] |
-| balanced | referencePnlUsd | -0.838 | [-0.968, -0.700] |
-| balanced | meanAbsInventory | -5.096 | [-6.759, -3.425] |
-| balanced | fillRate | -0.018 | [-0.030, -0.005] |
-| directional | terminalPnlUsd | 0.867 | [-4.347, 5.819] |
-| directional | referencePnlUsd | -0.821 | [-0.986, -0.631] |
-| directional | meanAbsInventory | -10.566 | [-12.507, -8.481] |
-| directional | fillRate | -0.053 | [-0.074, -0.029] |
-| informed-shift | terminalPnlUsd | 3.094 | [1.064, 4.781] |
-| informed-shift | referencePnlUsd | 2.859 | [2.619, 3.117] |
-| informed-shift | meanAbsInventory | -4.229 | [-5.266, -3.317] |
-| informed-shift | fillRate | 0.012 | [-0.016, 0.042] |
-
-## Development selection
-
-| Skew | Mean reference P&L | Mean absolute inventory | Selection score |
-|---:|---:|---:|---:|
-| 1 | 1.595 | 5.307 | 1.489 |
-| 0.5 | 1.600 | 7.032 | 1.459 |
-| 0.25 | 1.501 | 8.836 | 1.324 |
-
-## Reading the evidence
-
-- Lower inventory is beneficial for the exposure objective; compare it with changes in fill rate, reference P&L and terminal P&L.
-- Terminal P&L uses one Bernoulli event outcome per path. Reference P&L uses the generator’s common final probability and reduces terminal outcome noise; neither probability nor outcome is supplied to the policy.
-- The informed-shift regime stresses stale fixed-value quotes after a hidden probability change. Inventory adjustment alone is not a probability forecasting model.
-- Fee sensitivity at 0/25/50 bps in episodes.csv revalues the same fills. Orders are executed by the actual service at its 25 bps fee.
-- This is buying complementary binary contracts; holdings accumulate without resale or collateral recycling. Quote cancellation has no latency or cost in the simulation.
-- The 16 evaluation paths per regime are a small synthetic sample. Intervals are conditional on this generator and selection; they do not establish real-market profitability.
-
-![Inventory paths for the first preselected evaluation seed in each regime](inventory.svg)
-research-results/inventory-strategy/ceea85b24557cf6cf8b4f3e8b98d32622214e2f5/
-
