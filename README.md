@@ -230,6 +230,8 @@ Terminal P&L  = winning contract quantity × $1
 
 Neither the next arrival nor the reference probability or terminal outcome is supplied to the quoting policy. Valuation is performed offline; it does not execute an application settlement transaction.
 
+For each episode, fill rate is the number of contracts executed against the quoting policy divided by the total quantity submitted by external incoming orders. The table reports the mean of these episode-level fill rates. Mean absolute net inventory is averaged over arrivals within each episode and then across the 16 evaluation paths.
+
 ### Evaluation Results
 
 The following values are means over the 16 held-out paths in each regime. P&L is in virtual USD after execution fees.
@@ -264,6 +266,10 @@ The local run passed **29 related tests** and execution/accounting assertions ac
 
 Local validation environment: **macOS arm64, Node.js 22.14.0, SQLite 3.47.2**.
 
+The experiment also completed successfully on GitHub Actions at commit [`f7b9ba6`](https://github.com/jaehongyoon-sketch/my-site/commit/f7b9ba61c69b707dc9eecced3a8b0bfd5128449d). The workflow passed policy and trading regression tests, completed the development and held-out comparison, and uploaded the generated evidence.
+
+**Evidence:** [Successful experiment run](https://github.com/jaehongyoon-sketch/my-site/actions/runs/40003911312) · [Experiment runner](https://github.com/jaehongyoon-sketch/my-site/blob/f7b9ba61c69b707dc9eecced3a8b0bfd5128449d/experiments/inventory-strategy/run.mjs) · [Policy and valuation definitions](https://github.com/jaehongyoon-sketch/my-site/blob/f7b9ba61c69b707dc9eecced3a8b0bfd5128449d/experiments/inventory-strategy/model.mjs) · [Experiment documentation](https://github.com/jaehongyoon-sketch/my-site/blob/f7b9ba61c69b707dc9eecced3a8b0bfd5128449d/docs/inventory-strategy.md)
+
 Base application commit: [`ceea85b`](https://github.com/jaehongyoon-sketch/my-site/commit/ceea85b24557cf6cf8b4f3e8b98d32622214e2f5). This identifies the application version used before adding the experiment files; experiment-source hashes are recorded separately in `results.json`.
 
 The runner produces:
@@ -276,6 +282,27 @@ The runner produces:
 - `report.md` and `inventory.svg`: tables, interpretation, and predefined example paths.
 
 The study evaluates finite-horizon inventory control under declared synthetic conditions. Its central result is the relationship between inventory concentration, execution rate, and fee-inclusive value.
+
+### Reproduce the Strategy Experiment
+
+Use a separate checkout of the experiment commit with Node.js 22.14.0:
+
+```bash
+git clone https://github.com/jaehongyoon-sketch/my-site.git event-inventory-experiment
+cd event-inventory-experiment
+git checkout f7b9ba61c69b707dc9eecced3a8b0bfd5128449d
+npm ci
+
+node --experimental-strip-types --test \
+  tests/inventory-strategy.test.mjs \
+  tests/day11.test.mjs \
+  tests/day12.test.mjs \
+  tests/market-prices.test.mjs
+
+node experiments/inventory-strategy/run.mjs
+```
+
+Generated results are written to `experiments/inventory-strategy/results/`.
 
 ## Automated Verification
 
