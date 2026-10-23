@@ -1,0 +1,57 @@
+name: Inventory strategy comparison
+
+on:
+  push:
+    branches: [inventory-strategy]
+    paths:
+      - 'experiments/inventory-strategy/**'
+      - 'tests/inventory-strategy.test.mjs'
+      - 'tests/helpers/practice.mjs'
+      - 'lib/practice/**'
+      - 'drizzle/**'
+      - 'package-lock.json'
+      - '.github/workflows/inventory-strategy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inventory-strategy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check required experiment files
+        run: |
+          test -f experiments/inventory-strategy/model.mjs
+          test -f experiments/inventory-strategy/run.mjs
+          test -f tests/inventory-strategy.test.mjs
+      - name: Validate policies, valuation and trading regressions
+        run: node --experimental-strip-types --test tests/inventory-strategy.test.mjs tests/day11.test.mjs tests/day12.test.mjs tests/market-prices.test.mjs
+      - name: Run development and held-out comparison
+        shell: bash
+        run: |
+          mkdir -p experiments/inventory-strategy/results
+          set -o pipefail
+          node experiments/inventory-strategy/run.mjs | tee experiments/inventory-strategy/results/run.log
+      - name: Publish report
+        run: cat experiments/inventory-strategy/results/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: inventory-strategy-${{ github.sha }}
+          path: experiments/inventory-strategy/results/
+          retention-days: 30
+          if-no-files-found: warn
